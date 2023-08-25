@@ -1,0 +1,1939 @@
+{
+  "type": "mask_table",
+  "table": '"datamasque"."BI_Appeals"',
+  "key": '"REPLACE_ME"',
+  "rules":
+    [
+      { "column": '"AbortReasonCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"AbortReasonId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"AbortReasonName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"ActualDischargeDate"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"AdditionalDocumentationSlaCompleteDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"AdditionalDocumentationSlaId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"AdmissionDate"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"AdmissionSourceCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"AdmissionSourceId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"AdmissionSourceName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      { "column": '"AdmissionTypeCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"AdmissionTypeId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"AdmissionTypeName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"Appeal_ReviewOutcomeCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"AppealCaseId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"AppealReviewId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"AppealTypeCode"', "masks": [{ "type": "imitate" }] },
+      { "column": '"AuthorizationNumber"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"AuthorizationNumberRuleId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"C_AppealOutcomeCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"C_AppealOutcomeName"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "concat",
+                    "masks":
+                      [
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_firstNames_mixed.csv",
+                          "seed_column": "firstname-mixed",
+                        },
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_lastNames.csv",
+                          "seed_column": "lastnames",
+                        },
+                      ],
+                    "glue": " ",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 10,
+                  },
+                ],
+            },
+          ],
+      },
+      {
+        "column": '"CaseCloseDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"CaseCreateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"CaseId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"CaseReferenceId"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"CaseSlaCompleteDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"CaseStatusCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"CaseStatusId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"CaseStatusName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"CaseUpdateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"ClientCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"ClientId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ClientName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"ClientPrtlId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"ClientTypeCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"ClosureSlaCompleteDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"CreateUserOrganizationId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"CreateUserOrgName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      { "column": '"CreateUserOrgNpi"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"DiagnosisCreateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"DischargeClosureCreateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"DischargeClosureUpdateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"DischargeStatusCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"DischargeStatusId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"DischargeStatusName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"EligibilityId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"EpsdtInd"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ExtensionCaseId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ExtensionReviewId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"FacilityNameLastOrganization"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      { "column": '"FacilityNPI"', "masks": [{ "type": "imitate" }] },
+      { "column": '"FacilityPrimaryNumber"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"FacilityStateCodeName"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "concat",
+                    "masks":
+                      [
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_firstNames_mixed.csv",
+                          "seed_column": "firstname-mixed",
+                        },
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_lastNames.csv",
+                          "seed_column": "lastnames",
+                        },
+                      ],
+                    "glue": " ",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 40,
+                  },
+                ],
+            },
+          ],
+      },
+      {
+        "column": '"FacilityStateCodeUspsCode"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_AU_addresses.csv",
+                    "seed_column": "state_long",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 2,
+                  },
+                ],
+            },
+          ],
+      },
+      { "column": '"FinalIcdCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"FinalIcdId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"FinalIcdShortDesc"', "masks": [{ "type": "imitate" }] },
+      { "column": '"HcpcsCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"HcpcsId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"HcpcsShortDesc"', "masks": [{ "type": "imitate" }] },
+      { "column": '"IcdCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"IcdProcId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"IcdShortDesc"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"INITIAL_AuthorizationNumber"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"Initial_CaseId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"INITIAL_FirstDateOfService"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"INITIAL_HcpcsCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"INITIAL_HcpcsId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"INITIAL_HcpcsShortDesc"',
+        "masks": [{ "type": "imitate" }],
+      },
+      { "column": '"INITIAL_IcdCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"INITIAL_IcdProcId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"INITIAL_IcdShortDesc"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"INITIAL_LastDateOfService"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"INITIAL_OutcomeCategoryCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      { "column": '"INITIAL_OutcomeCode"', "masks": [{ "type": "imitate" }] },
+      { "column": '"INITIAL_OutcomeFlow"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"INITIAL_OutcomeId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"INITIAL_OutcomeName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"INITIAL_OutcomeReasonCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"INITIAL_OutcomeReasonId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"INITIAL_OutcomeReasonName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"Initial_PeerReviewerFirstName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_firstNames_mixed.csv",
+              "seed_column": "firstname-mixed",
+            },
+          ],
+      },
+      {
+        "column": '"Initial_PeerReviewerLastName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_lastNames.csv",
+              "seed_column": "lastnames",
+            },
+          ],
+      },
+      {
+        "column": '"Initial_PeerReviewerName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"Initial_PeerReviewerUserId"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"Initial_PeerReviewerUserInfoId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"INITIAL_ProcedureCreateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"INITIAL_ProcedureCreateUserInfoId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"INITIAL_ProcedureFactId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"INITIAL_ProcedureFactReferenceId"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"INITIAL_ProcedureSequence"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"Initial_RequestId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"Initial_RequestReferenceId"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"Initial_ReviewCoordinatorFirstName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_firstNames_mixed.csv",
+              "seed_column": "firstname-mixed",
+            },
+          ],
+      },
+      {
+        "column": '"Initial_ReviewCoordinatorLastName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_lastNames.csv",
+              "seed_column": "lastnames",
+            },
+          ],
+      },
+      {
+        "column": '"Initial_ReviewCoordinatorName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"Initial_ReviewerUserId"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"Initial_ReviewerUserInfoId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"Initial_ReviewId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"Initial_ReviewOutcomeCategoryCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"Initial_ReviewOutcomeCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"Initial_ReviewOutcomeId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"Initial_ReviewOutcomeName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      { "column": '"InOutCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"InpatientFlag"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"LateRequestDays"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"LateRequestFlag"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"LateRequestRecommendedDate"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"LateRequestRecommendedNotificationDate"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"LetterSentList"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"MedicareIndicatorId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"OutcomeCategoryCode"', "masks": [{ "type": "imitate" }] },
+      { "column": '"OutcomeCode"', "masks": [{ "type": "imitate" }] },
+      { "column": '"OutcomeFlow"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"OutcomeId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"OutcomeName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      { "column": '"OutcomeReasonCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"OutcomeReasonId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"OutcomeReasonName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      { "column": '"PatientBirthDate"', "masks": [{ "type": "retain_age" }] },
+      {
+        "column": '"PatientFirstName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_firstNames_mixed.csv",
+              "seed_column": "firstname-mixed",
+            },
+          ],
+      },
+      {
+        "column": '"PatientId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"PatientLastName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_lastNames.csv",
+              "seed_column": "lastnames",
+            },
+          ],
+      },
+      { "column": '"PatientPrimaryNumber"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"PatientPrimaryNumberQualifierCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"PatientPrimaryNumberQualifierName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      { "column": '"PatientSsn"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"PatientStateCodeName"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "concat",
+                    "masks":
+                      [
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_firstNames_mixed.csv",
+                          "seed_column": "firstname-mixed",
+                        },
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_lastNames.csv",
+                          "seed_column": "lastnames",
+                        },
+                      ],
+                    "glue": " ",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 40,
+                  },
+                ],
+            },
+          ],
+      },
+      {
+        "column": '"PatientStateCodeUspsCode"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_AU_addresses.csv",
+                    "seed_column": "state_long",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 2,
+                  },
+                ],
+            },
+          ],
+      },
+      {
+        "column": '"PeerReviewerFirstName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_firstNames_mixed.csv",
+              "seed_column": "firstname-mixed",
+            },
+          ],
+      },
+      {
+        "column": '"PeerReviewerLastName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_lastNames.csv",
+              "seed_column": "lastnames",
+            },
+          ],
+      },
+      {
+        "column": '"PeerReviewerName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"PeerReviewerSlaCompleteDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"PeerReviewerUserId"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"PeerReviewerUserInfoId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"PendingReview_AppealOutcomeCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"PendingReview_AppealOutcomeName"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "concat",
+                    "masks":
+                      [
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_firstNames_mixed.csv",
+                          "seed_column": "firstname-mixed",
+                        },
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_lastNames.csv",
+                          "seed_column": "lastnames",
+                        },
+                      ],
+                    "glue": " ",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 10,
+                  },
+                ],
+            },
+          ],
+      },
+      {
+        "column": '"PhysicianNameFirst"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"PhysicianNameLastOrganization"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      { "column": '"PhysicianNPI"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"PhysicianPrimaryNumber"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"PhysicianStateCodeName"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "concat",
+                    "masks":
+                      [
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_firstNames_mixed.csv",
+                          "seed_column": "firstname-mixed",
+                        },
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_lastNames.csv",
+                          "seed_column": "lastnames",
+                        },
+                      ],
+                    "glue": " ",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 40,
+                  },
+                ],
+            },
+          ],
+      },
+      {
+        "column": '"PhysicianStateCodeUspsCode"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_AU_addresses.csv",
+                    "seed_column": "state_long",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 2,
+                  },
+                ],
+            },
+          ],
+      },
+      { "column": '"PlaceOfServiceCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"PlaceOfServiceId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"PlaceOfServiceName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"PlanEndDate"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"PlannedReadmission"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"PlanStartDate"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"PolicyIdentifier"', "masks": [{ "type": "imitate" }] },
+      { "column": '"PR_AppealOutcomeCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"PR_AppealOutcomeName"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "concat",
+                    "masks":
+                      [
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_firstNames_mixed.csv",
+                          "seed_column": "firstname-mixed",
+                        },
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_lastNames.csv",
+                          "seed_column": "lastnames",
+                        },
+                      ],
+                    "glue": " ",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 10,
+                  },
+                ],
+            },
+          ],
+      },
+      { "column": '"PrimaryIcdCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"PrimaryIcdId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"PrimaryIcdShortDesc"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"procedureAppealROWNUM"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"ProcedureCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"ProcedureCreateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"ProcedureCreateUserInfoId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"ProcedureDesc"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"ProcedureFactId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ProcedureFactReferenceId"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"ProcedureSequence"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"RC_AppealOutcomeCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"RC_AppealOutcomeName"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "concat",
+                    "masks":
+                      [
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_firstNames_mixed.csv",
+                          "seed_column": "firstname-mixed",
+                        },
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_lastNames.csv",
+                          "seed_column": "lastnames",
+                        },
+                      ],
+                    "glue": " ",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 10,
+                  },
+                ],
+            },
+          ],
+      },
+      { "column": '"RecordSourceDesc"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"RecordSourceId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ReOpenCaseId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ReOpenRequestId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ReOpenReviewId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"ReOpenTypeCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"RequestAdjustmentInd"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"RequestCalculatedDischargeDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"RequestCreateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"RequestedServiceEndDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"RequestedServiceStartDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"RequestEligibilityDate"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"RequestId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"RequestReceivedDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"RequestReferenceId"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"requestROWNUM"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"RequestSourceCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"RequestSourceId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"RequestSourceName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      { "column": '"RequestStatusCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"RequestStatusId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"RequestStatusName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"RequestStatusUpdateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"RequestSubmitDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"RequestTimingId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"RequestUpdateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"RetroActiveRequestInd"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"Review_AppealOutcomeCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"Review_AppealOutcomeName"',
+        "masks":
+          [
+            {
+              "type": "chain",
+              "masks":
+                [
+                  {
+                    "type": "concat",
+                    "masks":
+                      [
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_firstNames_mixed.csv",
+                          "seed_column": "firstname-mixed",
+                        },
+                        {
+                          "type": "from_file",
+                          "seed_file": "DataMasque_lastNames.csv",
+                          "seed_column": "lastnames",
+                        },
+                      ],
+                    "glue": " ",
+                  },
+                  {
+                    "type": "take_substring",
+                    "start_index": 0,
+                    "end_index": 10,
+                  },
+                ],
+            },
+          ],
+      },
+      {
+        "column": '"ReviewBusinessDaysComplete"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ReviewCalendarDaysComplete"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ReviewCloseDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"ReviewCoordinatorFirstName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_firstNames_mixed.csv",
+              "seed_column": "firstname-mixed",
+            },
+          ],
+      },
+      {
+        "column": '"ReviewCoordinatorLastName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_lastNames.csv",
+              "seed_column": "lastnames",
+            },
+          ],
+      },
+      {
+        "column": '"ReviewCoordinatorName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"ReviewCreateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      {
+        "column": '"ReviewerSlaCompleteDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"ReviewerUserId"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"ReviewerUserInfoId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ReviewId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ReviewOutcomeCategoryCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      { "column": '"ReviewOutcomeCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"ReviewOutcomeId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ReviewOutcomeName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"ReviewSlaId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"ReviewStatusCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"ReviewStatusId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"ReviewStatusName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"ReviewTypeId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"ReviewTypeLabelCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"ReviewTypeLabelName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_lastNames.csv",
+              "seed_column": "lastnames",
+            },
+          ],
+      },
+      {
+        "column": '"ReviewUpdateDateTime"',
+        "masks":
+          [
+            {
+              "type": "from_random_datetime",
+              "min": "1970-01-01 00:00:00",
+              "max": "2023-08-18 15:50:40.540279",
+            },
+          ],
+      },
+      { "column": '"SubmissionMethodCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"SubmissionMethodId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"SubmissionMethodName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"SubscriberFirstName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_firstNames_mixed.csv",
+              "seed_column": "firstname-mixed",
+            },
+          ],
+      },
+      {
+        "column": '"SubscriberId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"SubscriberLastName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_lastNames.csv",
+              "seed_column": "lastnames",
+            },
+          ],
+      },
+      {
+        "column": '"SubscriberPolicyIdentifier"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"SubscriberPrimaryNumber"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"SubscriberPrimaryNumberQualifierCode"',
+        "masks": [{ "type": "imitate" }],
+      },
+      {
+        "column": '"SubscriberPrimaryNumberQualifierDesc"',
+        "masks": [{ "type": "imitate" }],
+      },
+      { "column": '"SubscriberSsn"', "masks": [{ "type": "imitate" }] },
+      { "column": '"TimingCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"TimingName"',
+        "masks":
+          [
+            {
+              "type": "concat",
+              "masks":
+                [
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_firstNames_mixed.csv",
+                    "seed_column": "firstname-mixed",
+                  },
+                  {
+                    "type": "from_file",
+                    "seed_file": "DataMasque_lastNames.csv",
+                    "seed_column": "lastnames",
+                  },
+                ],
+              "glue": " ",
+            },
+          ],
+      },
+      {
+        "column": '"TotalCaseTimeLate"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"TotalCaseTimeToComplete"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"TotalPeerReviewerTime"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"TotalReviewerTime"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"TotalReviewTimeLate"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"TotalReviewTimeToComplete"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      { "column": '"TplCode"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"TplId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"TplName"',
+        "masks":
+          [
+            {
+              "type": "from_file",
+              "seed_file": "DataMasque_lastNames.csv",
+              "seed_column": "lastnames",
+            },
+          ],
+      },
+      { "column": '"TypeOfServiceCode"', "masks": [{ "type": "imitate" }] },
+      { "column": '"TypeOfServiceDesc"', "masks": [{ "type": "imitate" }] },
+      {
+        "column": '"TypeOfServiceId"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+      {
+        "column": '"UrgentFlag"',
+        "masks": [{ "type": "from_random_number", "max": 99.0, "min": 1.0 }],
+      },
+    ],
+}

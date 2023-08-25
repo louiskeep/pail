@@ -1,0 +1,4427 @@
+doc: |
+   === Ruleset generated at 2023-08-18T15:50:58 ===
+version: '1.0'
+tasks:
+- type: mask_table
+  table: '"datamasque"."Assessment_AssessmentCaseAssessment"'
+  key:
+  - '"AssessmentCaseAssessmentId"'
+  - '"ClientId"'
+  rules:
+  - column: '"AssignedUserInfoId"'
+    hash_columns:
+    - assessmentcaseassessmentid
+    - clientid
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."Assessment_AssessmentClientPrtl"'
+  key:
+  - '"AssessmentClientPrtlId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."Assessment_AssessmentReferral"'
+  key:
+  - '"AssessmentReferralId"'
+  - '"ClientId"'
+  rules:
+  - column: '"ExternalCaseManagerEmail"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"ExternalCaseManagerName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"ExternalCaseManagerPhone"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"ExternalCaseManagerUserId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientZipCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: postcode
+- type: mask_table
+  table: '"datamasque"."Assessment_AssessmentSection"'
+  key:
+  - '"AssessmentSectionId"'
+  rules:
+  - column: '"AssessmentSectionSequence"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."BI_PASRR_Level2CompletedAssessmentStage"'
+  key:
+  - '"ClientId"'
+  - '"PASRR_Level2CompletedAssessmentStageId"'
+  rules:
+  - column: '"AssessmentSectionSequence"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."BI_PASRR_Stage"'
+  key:
+  - '"PASRR_StageId"'
+  - '"PASRR_StageStartDate"'
+  rules:
+  - column: '"PatientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."BI_PASRR_VolumeSection"'
+  key:
+  - '"PASRR_VolumeSectionId"'
+  - '"PASRR_VolumeSectionStartDate"'
+  rules:
+  - column: '"AssessmentSectionSequence"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."Correspondence_Notification"'
+  key:
+  - '"ClientId"'
+  - '"NotificationId"'
+  rules:
+  - column: '"Body"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"SentToUserInfoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."CostSavings_BillingConfigReviewType"'
+  key:
+  - '"BillingConfigReviewTypeId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."CostSavings_BillingHistoryMonthlyAudit"'
+  key:
+  - '"BillingHistoryMonthAuditId"'
+  - '"ClientId"'
+  rules:
+  - column: '"PatientBirthDate"'
+    masks:
+    - type: retain_age
+  - column: '"PatientName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PatientNumber"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."CostSavings_CM_EligiblePatient"'
+  key:
+  - '"CM_EligiblePatientId"'
+  - '"runId"'
+  rules:
+  - column: '"patientBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"patientEnterpriseId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"patientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."CostSavings_UM_FlatRates"'
+  key:
+  - '"UM_FlatRatesId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."dbo_SKH_FLNAME"'
+  key:
+  - '"ID"'
+  rules:
+  - column: '"FNAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"LNAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+- type: mask_table
+  table: '"datamasque"."Document_DocumentTag"'
+  key:
+  - '"DocumentTagId"'
+  rules:
+  - column: '"UserInfoId"'
+    hash_columns:
+    - UserInfoId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."Document_DocumentUpload"'
+  key:
+  - '"ClientId"'
+  - '"DocumentUploadId"'
+  rules:
+  - column: '"PatientResponsiblePersonId"'
+    hash_columns:
+    - PatientResponsiblePersonId
+    - UserInfoId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."EdmStage_AssessmentReference"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"enterprisePatientId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"memberAge"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"memberBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"memberBirthDateNormalized"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"memberFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"memberFullName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"memberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"memberLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+- type: mask_table
+  table: '"datamasque"."EdmStage_BiometricReference"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"dob"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"dobNoramlized"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_datetime
+      min: '1970-01-01 00:00:00'
+      max: '2023-08-18 15:50:41.087029'
+  - column: '"emailAddress"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"emailAddressNormalized"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"enterprisePatientId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"firstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"genderCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"genderId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"lastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"middleName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientPrimaryNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientPrimaryQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"phoneNumber1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"phoneNumber1Normalized"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"phoneNumber2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"phoneNumber2Normalized"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"ssn"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdmStage_CM_ActivityInfo"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"patientDateOfBirth"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"patientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientGender"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"patientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"referenceIdentifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdmStage_CM_CaseInfo"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"attemptCount"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"eligibilityStatusCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"mobileParticipationStatusCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientDateOfBirth"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"patientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientGender"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"patientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"programStatuscCde"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"referenceIdentifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"statusReasonCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"taskQueueType"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdmStage_HWB_MemberExclusion"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"enterprisePatientId"'
+    masks:
+    - type: imitate
+  - column: '"patientPrimaryNumber"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdmStage_HWB_ReferralHistory"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"addressLine1"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"addressLine2"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"birthDate"'
+    masks:
+    - type: retain_age
+  - column: '"city"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: city
+  - column: '"enterprisePatientId"'
+    masks:
+    - type: imitate
+  - column: '"firstName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"lastName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"patientPrimaryNumber"'
+    masks:
+    - type: imitate
+  - column: '"ssn"'
+    masks:
+    - type: imitate
+  - column: '"zip"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdmStage_ProviderReference"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"firstName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"medicaidNumber"'
+    masks:
+    - type: imitate
+  - column: '"medicareNumber"'
+    masks:
+    - type: imitate
+  - column: '"middleName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"otherAddressLine1"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"otherAddressLine2"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"otherCityName"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"otherCountryCode"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"otherCountrySubdivisionCode"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"otherCountyCode"'
+    masks:
+    - type: imitate
+  - column: '"otherLocNumber"'
+    masks:
+    - type: imitate
+  - column: '"otherPostalZoneCode"'
+    masks:
+    - type: imitate
+  - column: '"otherStateCode"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"otherStateCodeId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"primaryEmailAddress"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"primaryPhoneNumber"'
+    masks:
+    - type: imitate
+  - column: '"primaryPhoneNumberQualifier"'
+    masks:
+    - type: imitate
+  - column: '"secondaryPhoneNumber"'
+    masks:
+    - type: imitate
+  - column: '"secondaryPhoneNumberQualifier"'
+    masks:
+    - type: imitate
+  - column: '"suffix"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdmStage_ReferralClaimFinal"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"enterprisePatientId"'
+    masks:
+    - type: imitate
+  - column: '"patientDOB"'
+    masks:
+    - type: from_random_datetime
+      min: '1970-01-01 00:00:00'
+      max: '2023-08-18 15:50:41.467569'
+  - column: '"patientFirstName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientFullName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"patientGenderCode"'
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"patientLastName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"patientMiddleName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientPrimaryNumber"'
+    masks:
+    - type: imitate
+  - column: '"patientRelationshipCode"'
+    masks:
+    - type: imitate
+  - column: '"patientSSN"'
+    masks:
+    - type: imitate
+  - column: '"subscriberSSN"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdmStage_RiskReference"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"description"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"memberBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"memberFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"memberLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"memberMiddleName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"memberPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"memberPrimaryNumberExt"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"memberPrimaryNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"memberSupplementalNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"memberSupplementalNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientMemberGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientMemberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"predictionRank"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdmStage_UM_ActivityInfo"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"assignedFromUserId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"assignedToUserId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"fileNameTitle"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"patientIdQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientReferenceNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdmStage_UM_ReviewInfo"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"closeureReviewCoordinatorUserId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"createUserId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"medicareIndicatorCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientDateOfBirth"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"patientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientGenderCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"patientIdQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientLast"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientReferenceNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientRelationship"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"qocResponsiblePersonEntityTypeCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"qocResponsiblePersonEntityTypeQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"qocResponsiblePersonFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"qocResponsiblePersonLastNameOrOrganizationName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"reviewCoordinatorLetterRationale"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"reviewCoordinatorNotes"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"subscriberGender"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"subscriberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberIdQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"subscriberReferenceNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdwStage_AllClaimReference"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"enterprisePatientId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"enterpriseSubscriberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientDOB"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientFullName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"patientGender"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"patientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"patientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientPrimaryNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientSSN"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"subscriberPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberSSN"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdwStage_MemberReference"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"birthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"birthDateNormalized"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"citizenshipInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_boolean
+  - column: '"citizenshipStatusCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"deathDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"deathDateNormalized"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_datetime
+      min: '1970-01-01 00:00:00'
+      max: '2023-08-18 15:50:41.611069'
+  - column: '"disabilityTypeCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"enterprisePatientId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"enterpriseSubscriberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"firstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"genderCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"groupPaceInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_boolean
+  - column: '"groupPayeeInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_boolean
+  - column: '"groupPhysicalHealthInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_boolean
+  - column: '"groupPolicySequenceCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"groupSpiInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_boolean
+  - column: '"handicapInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_boolean
+  - column: '"lastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"linkToEnterprisePatientId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"livingArrangementCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"managedCareInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_boolean
+  - column: '"maritalStatusCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"medicaidNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"medicareIndicatorCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"medicareNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"memberSequenceNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"middleName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"multipleBirthSequenceNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientDisabilityTypeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientEmailCommunicationQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientGenderId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientLanguageId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientLanguageUseId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientLivingArrangementId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientMaritalStatusId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientMedicareIndicatorId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientNextId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientPhoneCommunicationQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientPreferredContactMethodId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientPrimaryCountyCodeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientPrimaryGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientPrimaryNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientPrimaryNumberQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientPrimaryStateCodeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientPriorId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientRaceId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientSecondaryCountyCodeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientSecondaryEmailCommunicationQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientSecondaryGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientSecondaryPhoneCommunicationQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientSecondaryStateCodeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientSupplementalNumber1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientSupplementalNumber2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientSupplementalNumber3"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientSupplementalNumberQualifier1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientSupplementalNumberQualifier2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientSupplementalNumberQualifier3"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientTplId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"primaryAddressLine1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"primaryAddressLine2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"primaryCityName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"primaryCountryCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"primaryCountrySubdivisionCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"primaryCountyCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"primaryEmailAddress"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"primaryPhoneNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"primaryPhoneNumberInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"primaryPhoneNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"primaryPostalZoneCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"primaryStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"priorPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"priorPrimaryNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"raceCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"relationshipCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"relationshipCodeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"responsiblePersonAddressLine1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"responsiblePersonAddressLine2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"responsiblePersonCityName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"responsiblePersonCommunicationNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"responsiblePersonCommunicationNumber2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"responsiblePersonCommunicationNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"responsiblePersonCommunicationNumberQualifier2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"responsiblePersonCommunicationQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"responsiblePersonCommunicationQualifierId2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"responsiblePersonCountryCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"responsiblePersonCountrySubdivisionCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"responsiblePersonEntityIdentifierTypeQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"responsiblePersonEntityTypeQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"responsiblePersonFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"responsiblePersonGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"responsiblePersonIdentificationCodeQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"responsiblePersonIdentifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"responsiblePersonLastOrOrganizationName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"responsiblePersonMiddleName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"responsiblePersonPostalZoneCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"responsiblePersonPrefix"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"responsiblePersonStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"responsiblePersonSuffix"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"secondaryAddressLine1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"secondaryAddressLine2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"secondaryCityName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"secondaryCountryCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"secondaryCountrySubdivisionCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"secondaryCountyCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"secondaryEmailAddress"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"secondaryPhoneNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"secondaryPhoneNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"secondaryPostalZoneCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"secondaryStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"ssn"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subPlanDesc"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subPlanName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"subPlanNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subPlanType"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberPrimaryNumberQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"subscriberSupplementalNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberSupplementalNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberSupplementalNumberQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"suffix"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"tempEnterprisePatientId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."EdwStage_PharmacyClaimReference"'
+  key:
+  - '"fileRequestId"'
+  - '"stageId"'
+  rules:
+  - column: '"livingArrangementId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientAddressLine1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"patientAddressLine2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"patientBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"patientCityName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"patientCountryCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"patientCountrySubdivisionCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"patientCountyCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientDeathDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientGenderCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"patientGenderId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"patientLivingArrangementCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientMiddleName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientNameSuffix"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"patientPostalZipCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: postcode
+  - column: '"patientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientPrimaryNumberExt"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientPrimaryNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientRaceCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientRaceId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"patientRelationshipCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"patientSupplementalNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientSupplementalNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientWeight"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"payerAddressLine1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"payerAddressLine2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"payerCityName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"payerCountryCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"payerCountrySubdivisionCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"payerName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"payerNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"payerNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"payerPostalZoneCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"payerStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"subscriberBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"subscriberCityName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"subscriberCountryCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"subscriberCountrySubdivisionCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_mixed_countries_addresses.csv
+      seed_column: country
+  - column: '"subscriberCountyCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"subscriberGenderCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"subscriberGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"subscriberGroupPolicyName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"subscriberGroupPolicyNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberGroupPolicySectionNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberGroupPolicyStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"subscriberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"subscriberInsuranceTypeCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"subscriberMiddleName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"subscriberNameSuffix"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"subscriberPlanName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"subscriberPlanNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberPostalZoneCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberPrimaryNumberExt"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberRaceCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"subscriberSupplementalNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"subscriberSupplementalNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."HWB_FileReferralFeedback"'
+  key:
+  - '"feedbackId"'
+  - '"fileRequestId"'
+  rules:
+  - column: '"feedbackMessage"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"healthCoachUserName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"isError"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_boolean
+  - column: '"patientBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"patientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"patientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientSsn"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"previousCareManagementCaseId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"previousCareManagementId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"previousHealthCoachName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"previousHealthCoachUserName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+- type: mask_table
+  table: '"datamasque"."HWB_StriveExport"'
+  key:
+  - '"striveExportId"'
+  rules:
+  - column: '"addressLine1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"addressLine2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"city"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: city
+  - column: '"emailAddress"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"patientBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"patientEnterpriseId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"patientGenderCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: from_fixed
+        value: REDACTED
+      - type: take_substring
+        start_index: 0
+        end_index: 5
+  - column: '"patientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"patientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"patientSsn"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"phoneNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"zip"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."Letter_LetterType"'
+  key:
+  - '"LetterTypeId"'
+  rules:
+  - column: '"LetterTypeCreateUserId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."Message_ChatAcknowledgment"'
+  key:
+  - '"ChatAcknowledgmentId"'
+  rules:
+  - column: '"UserInfoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."Message_MessageAcknowledgment"'
+  key:
+  - '"MessageAcknowledgmentId"'
+  rules:
+  - column: '"UserInfoId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."MigrationCMP_ActivityData"'
+  key:
+  - '"ActivityDataID"'
+  rules:
+  - column: '"ACTIVITY_USER_ID"'
+    masks:
+    - type: imitate
+  - column: '"CASE_MANAGER_USER_ID"'
+    masks:
+    - type: imitate
+  - column: '"CASE_MANAGER_USER_NAME"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"DOCUMENT_NAME"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"PATIENT_ID"'
+    hash_columns:
+    - Patient_ID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."MigrationCMP_AllergyData"'
+  key:
+  - '"AllergyDataID"'
+  rules:
+  - column: '"PATIENT_ID"'
+    hash_columns:
+    - Patient_ID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."MigrationCMP_CaseMasterData"'
+  key:
+  - '"CaseMasterDataID"'
+  rules:
+  - column: '"CASE_MANAGER_USER_ID"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_DATE_OF_BIRTH"'
+    masks:
+    - type: retain_age
+  - column: '"PATIENT_FIRST_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PATIENT_GENDER"'
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"PATIENT_ID"'
+    hash_columns:
+    - Patient_ID
+    masks:
+    - type: imitate
+  - column: '"PATIENT_LAST_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"PROGRAM_CODE"'
+    masks:
+    - type: imitate
+  - column: '"SENDER_FIRST_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"SENDER_LAST_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"SENDER_PHONE_NUMBER"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."MigrationCMP_ContactData"'
+  key:
+  - '"ContactDataID"'
+  rules:
+  - column: '"ADDRESS_1"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"ADDRESS_2"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"ADDRESS_CITY"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: city
+  - column: '"ADDRESS_STATE"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"ADDRESS_ZIP_CODE"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: postcode
+  - column: '"CONTACT_TYPE"'
+    masks:
+    - type: imitate
+  - column: '"ContactDataProcessStatusId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"DESIGNEE_METHOD"'
+    masks:
+    - type: imitate
+  - column: '"EMAIL_ADDRESS"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"FIRST_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"LAST_NAME_ORG_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"NPI_NUMBER"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_ID"'
+    hash_columns:
+    - Patient_ID
+    masks:
+    - type: imitate
+  - column: '"PHONE_EXT"'
+    masks:
+    - type: imitate
+  - column: '"PHONE_NBR"'
+    masks:
+    - type: imitate
+  - column: '"PHONE_TYPE"'
+    masks:
+    - type: imitate
+  - column: '"RELATIONSHIP_TO_MEMBER"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."MigrationCMP_ContactDataAnalysisResults"'
+  key:
+  - '"ContactDataAnalysisResultsId"'
+  rules:
+  - column: '"ContactDataID"'
+    hash_columns:
+    - ContactDataID
+    masks: []
+- type: mask_table
+  table: '"datamasque"."MigrationCMP_MedicationData"'
+  key:
+  - '"MedicationDataID"'
+  rules:
+  - column: '"PATIENT_DATE_OF_BIRTH"'
+    masks:
+    - type: retain_age
+  - column: '"PATIENT_FIRST_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PATIENT_GENDER"'
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"PATIENT_ID"'
+    hash_columns:
+    - Patient_ID
+    masks:
+    - type: imitate
+  - column: '"PATIENT_LAST_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+- type: mask_table
+  table: '"datamasque"."MigrationCMP_MemberLayout"'
+  key:
+  - '"MemberLayoutID"'
+  rules:
+  - column: '"PATIENT_ADDRESS_LINE_1"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"PATIENT_ADDRESS_LINE_2"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"PATIENT_CITIZENSHIP_STATUS_CODE"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_CITY_NAME"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"PATIENT_COUNTY_CODE"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_DATE_OF_BIRTH"'
+    masks:
+    - type: retain_age
+  - column: '"PATIENT_DEATH_DATE"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_EMAIL"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"PATIENT_FIRST_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PATIENT_GENDER_CODE"'
+    masks:
+    - type: from_fixed
+      value: REDACTED
+  - column: '"PATIENT_ID"'
+    hash_columns:
+    - Patient_ID
+    masks:
+    - type: imitate
+  - column: '"PATIENT_LANGUAGE_CODE"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_LAST_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"PATIENT_LIVING_ARRANGEMENT_CODE"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_MARITAL_STATUS_CODE"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_MIDDLE_NAME"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PATIENT_MULTIPLE_BIRTH_SEQUENCE_NUMBER"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_POSTAL_ZONE_CODE"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_PREGNANCY_IND"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_RACE_CODE"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_RELATIONSHIP_CODE"'
+    masks:
+    - type: imitate
+  - column: '"PATIENT_STATE_CODE"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: state_long
+  - column: '"PATIENT_TELEPHONE_NUMBER"'
+    masks:
+    - type: imitate
+  - column: '"SUBSCRIBER_ID"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."MigrationCMP_MemberLayoutQTIPPatientID"'
+  key:
+  - '"MemberLayoutQTIPPatientIDId"'
+  rules:
+  - column: '"PATIENT_ID"'
+    hash_columns:
+    - PatientID
+    - Patient_ID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."Patient_TwineExport"'
+  key:
+  - '"ClientId"'
+  - '"PatientId"'
+  rules:
+  - column: '"Email"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"GenderCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: from_fixed
+        value: REDACTED
+      - type: take_substring
+        start_index: 0
+        end_index: 1
+  - column: '"PatientBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"PatientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PatientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"PatientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientSsn"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PhoneNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."ProgramModule_ClientPrtl"'
+  key:
+  - '"ClientPrtlId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    hash_columns:
+    - ClientPrtlId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."ProgramModule_ReviewTypeLabelReviewTypeXwalk"'
+  key:
+  - '"ReviewTypeLabelReviewTypeXwalkId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    hash_columns:
+    - ClientPrtlId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."ProgramModule_ReviewTypeProcedure"'
+  key:
+  - '"ReviewTypeProcedureId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    hash_columns:
+    - ClientPrtlId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."Risk_RiskMedaiGap"'
+  key:
+  - '"ClientId"'
+  - '"RiskMedaiGapId"'
+  rules:
+  - column: '"Description"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."Rules_ClientPmsConsentExpirationRule"'
+  key:
+  - '"ClientPmsConsentExpirationRuleId"'
+  rules:
+  - column: '"MethodOfConsentId"'
+    hash_columns:
+    - MethodOfConsentId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."Rules_SecondOpinionRules"'
+  key:
+  - '"SecondOpinionRulesId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    hash_columns:
+    - ClientPrtlId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."Rules_TransmissionRule"'
+  key:
+  - '"TransmissionRuleId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."RxNorm_ConceptType"'
+  key:
+  - '"concept_type_id"'
+  rules:
+  - column: '"description"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."Savings_UtilizationManagementSavingsRates"'
+  key:
+  - '"UtilizationManagementSavingsRatesId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."Sla_Sla"'
+  key:
+  - '"SlaId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    hash_columns:
+    - ClientPrtlId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."Sla_SlaAppealWindow"'
+  key:
+  - '"SlaAppealWindowId"'
+  rules:
+  - column: '"ClientPrtlId"'
+    hash_columns:
+    - ClientPrtlId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."Stage_StandardBiometricMarkersAppStage"'
+  key:
+  - '"FileAuditId"'
+  - '"StandardBiometricMarkersAppStageId"'
+  rules:
+  - column: '"AlternateEmailAddress"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"AlternatePhoneNumber"'
+    masks:
+    - type: imitate
+  - column: '"EnterprisePatientId"'
+    masks:
+    - type: imitate
+  - column: '"GenderCode"'
+    masks:
+    - type: chain
+      masks:
+      - type: from_fixed
+        value: REDACTED
+      - type: take_substring
+        start_index: 0
+        end_index: 1
+  - column: '"PatientBirthDate"'
+    masks:
+    - type: retain_age
+  - column: '"PatientFirstName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PatientLastName"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"PatientPrimaryNumber"'
+    masks:
+    - type: imitate
+  - column: '"PhoneNumber"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."Stage_StandardCareAnalyzerAppStage"'
+  key:
+  - '"FileAuditId"'
+  - '"StandardCareAnalyzerAppStageId"'
+  rules:
+  - column: '"Age"'
+    masks:
+    - type: from_random_number
+      max: 99
+      min: 1
+  - column: '"dob"'
+    masks:
+    - type: retain_age
+  - column: '"member_name"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"member_rel"'
+    masks:
+    - type: imitate
+  - column: '"Patient_ID"'
+    hash_columns:
+    - Patient_ID
+    masks:
+    - type: imitate
+  - column: '"PatientPrimaryNumber"'
+    masks:
+    - type: imitate
+  - column: '"Sex"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."Stage_StandardMemberAppStage"'
+  key:
+  - '"FileAuditId"'
+  - '"StandardMemberAppStageId"'
+  rules:
+  - column: '"EnterprisePatientId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"EnterpriseSubscriberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"LinkId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"LivingArrangementId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"MedicareIndicatorCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"MethodOfConsentId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"NewQtipPatientId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientAddressCountyCodeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientAddressLine1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"PatientAddressLine2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"PatientAddressStateCodeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"PatientCityName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"PatientCountyCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientDeathDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PatientGenderCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: from_fixed
+        value: REDACTED
+      - type: take_substring
+        start_index: 0
+        end_index: 1
+  - column: '"PatientGenderId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientHeight"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 10.0
+  - column: '"PatientIdentityVerificationInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientIdOld"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientLanguageCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientLanguageId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"PatientLivingArrangementCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientMaritalStatusId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientMedicaidNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientMedicareIndicatorId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientMedicareNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientMiddleName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PatientMultipleBirthSequenceNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientNamePrefix"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: concat
+        masks:
+        - type: from_file
+          seed_file: DataMasque_firstNames_mixed.csv
+          seed_column: firstname-mixed
+        - type: from_file
+          seed_file: DataMasque_lastNames.csv
+          seed_column: lastnames
+        glue: ' '
+      - type: take_substring
+        start_index: 0
+        end_index: 10
+  - column: '"PatientNameSuffix"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: concat
+        masks:
+        - type: from_file
+          seed_file: DataMasque_firstNames_mixed.csv
+          seed_column: firstname-mixed
+        - type: from_file
+          seed_file: DataMasque_lastNames.csv
+          seed_column: lastnames
+        glue: ' '
+      - type: take_substring
+        start_index: 0
+        end_index: 10
+  - column: '"PatientNextId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientPostalZoneCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientPreferredContactMethodId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientPregnancyInd"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientPrimaryEmail"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"PatientPrimaryGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientPrimaryNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientPrimaryNumberQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientPrimaryTelephoneNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientPriorId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientPriorNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientPriorNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientRaceCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientRaceId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientRelationshipCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientResponsiblePersonAddressLine1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"PatientResponsiblePersonAddressLine2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"PatientResponsiblePersonAddressTypeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientResponsiblePersonCityName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"PatientResponsiblePersonCommunicationNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientResponsiblePersonCommunicationNumber2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientResponsiblePersonCommunicationQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientResponsiblePersonCommunicationQualifierId2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientResponsiblePersonEntityIdentifierCodeQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientResponsiblePersonFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PatientResponsiblePersonGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientResponsiblePersonLastOrOrganizationName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"PatientResponsiblePersonMiddleName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PatientResponsiblePersonNamePrefix"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: concat
+        masks:
+        - type: from_file
+          seed_file: DataMasque_firstNames_mixed.csv
+          seed_column: firstname-mixed
+        - type: from_file
+          seed_file: DataMasque_lastNames.csv
+          seed_column: lastnames
+        glue: ' '
+      - type: take_substring
+        start_index: 0
+        end_index: 10
+  - column: '"PatientResponsiblePersonNameSuffix"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: concat
+        masks:
+        - type: from_file
+          seed_file: DataMasque_firstNames_mixed.csv
+          seed_column: firstname-mixed
+        - type: from_file
+          seed_file: DataMasque_lastNames.csv
+          seed_column: lastnames
+        glue: ' '
+      - type: take_substring
+        start_index: 0
+        end_index: 10
+  - column: '"PatientResponsiblePersonPhoneNumberExt"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientResponsiblePersonPhoneNumberExt2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientResponsiblePersonPostalZoneOrZipCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: postcode
+  - column: '"PatientResponsiblePersonStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: take_substring
+        start_index: 0
+        end_index: 2
+  - column: '"PatientSecondaryAddressLine1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"PatientSecondaryAddressLine2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"PatientSecondaryCityName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      glue: ' '
+  - column: '"PatientSecondaryCountyCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientSecondaryEmail"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+  - column: '"PatientSecondaryGeoId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientSecondaryPostalZoneCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientSecondaryStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: take_substring
+        start_index: 0
+        end_index: 2
+  - column: '"PatientSecondaryTelephoneNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientSsn"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientStateCode"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: chain
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: take_substring
+        start_index: 0
+        end_index: 2
+  - column: '"PatientSupplementalNumber1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientSupplementalNumber2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientSupplementalNumber3"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientSupplementalNumberQualifier1"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientSupplementalNumberQualifier2"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientSupplementalNumberQualifier3"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientWeight"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 10.0
+  - column: '"PhoneNumberExt"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"RelationshipCodeId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"SubscriberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"SubscriberPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"SubscriberPrimaryNumberQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"SubscriberSupplementalNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"SubscriberSupplementalNumberQualifier"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"SubscriberSupplementalNumberQualifierId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."TaskQueue_EnrollmentQueue"'
+  key:
+  - '"ClientId"'
+  - '"TaskQueueId"'
+  rules:
+  - column: '"MemberDOB"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_datetime
+      min: '1970-01-01 00:00:00'
+      max: '2023-08-18 15:50:42.958506'
+  - column: '"MemberFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"MemberId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"MemberLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"TaskQueueType"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."TaskQueue_TaskQueueActive"'
+  key:
+  - '"TaskQueueId"'
+  rules:
+  - column: '"AssignedFromUserId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"AssignedToUserId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"ClientPrtlId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"PatientEnterpriseId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PatientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"PatientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."TaskQueue_TaskQueueLive"'
+  key:
+  - '"TaskQueueId"'
+  rules:
+  - column: '"AssignedFromUserId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"AssignedToUserId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"ClientPrtlId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"PatientBirthDate"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: retain_age
+  - column: '"PatientEnterpriseId"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+  - column: '"PatientFirstName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_firstNames_mixed.csv
+      seed_column: firstname-mixed
+  - column: '"PatientLastName"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: from_file
+      seed_file: DataMasque_lastNames.csv
+      seed_column: lastnames
+  - column: '"PatientPrimaryNumber"'
+    hash_columns:
+    - PatientID
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."Usr_UserAddress"'
+  key:
+  - '"UserAddressId"'
+  rules:
+  - column: '"UserAddressActiveFlag"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"UserAddressCity"'
+    masks:
+    - type: from_file
+      seed_file: DataMasque_AU_addresses.csv
+      seed_column: city
+  - column: '"UserAddressCount"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+  - column: '"UserAddressLine1"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+  - column: '"UserAddressLine2"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: address
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: city
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: state_long
+      - type: from_file
+        seed_file: DataMasque_AU_addresses.csv
+        seed_column: postcode
+      glue: ', '
+- type: mask_table
+  table: '"datamasque"."Usr_UserAttribute"'
+  key:
+  - '"ClientId"'
+  - '"UserAttributeId"'
+  rules:
+  - column: '"UserInfoId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."Usr_UserDevice"'
+  key:
+  - '"ClientId"'
+  - '"UserDeviceId"'
+  rules:
+  - column: '"UserInfoId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."Usr_UserEmail"'
+  key:
+  - '"UserEmailId"'
+  rules:
+  - column: '"Email"'
+    masks:
+    - type: concat
+      masks:
+      - type: from_file
+        seed_file: DataMasque_firstNames_mixed.csv
+        seed_column: firstname-mixed
+      - type: from_file
+        seed_file: DataMasque_lastNames.csv
+        seed_column: lastnames
+      - type: from_file
+        seed_file: DataMasque_fake_email_suffixes.csv
+        seed_column: email-suff
+- type: mask_table
+  table: '"datamasque"."Usr_UserInfoTitle"'
+  key:
+  - '"UserInfoTitleId"'
+  rules:
+  - column: '"UserInfoId"'
+    masks:
+    - type: from_random_number
+      max: 99.0
+      min: 1.0
+- type: mask_table
+  table: '"datamasque"."Usr_UserOrganization"'
+  key:
+  - '"UserOrganizationId"'
+  rules:
+  - column: '"UserInfoId"'
+    hash_columns:
+    - UserInfoId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."Usr_UserPhone"'
+  key:
+  - '"UserPhoneId"'
+  rules:
+  - column: '"PhoneNumber"'
+    masks:
+    - type: imitate
+- type: mask_table
+  table: '"datamasque"."Usr_UserPreference"'
+  key:
+  - '"UserPreferenceId"'
+  rules:
+  - column: '"UserInfoId"'
+    hash_columns:
+    - UserInfoId
+    - UserPreferenceId
+    masks: []
+- type: mask_table
+  table: '"datamasque"."Usr_UserWorkSchedule"'
+  key:
+  - '"UserWorkScheduleId"'
+  rules:
+  - column: '"UserInfoId"'
+    hash_columns:
+    - UserInfoId
+    masks: []
