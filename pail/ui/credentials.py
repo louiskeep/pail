@@ -3,7 +3,7 @@
 """
 AWS Credentials management
 Handles loading and saving of AWS credentials from files
-Refactored to remove Matillion functionality - S3 Crawler pure focus
+Refactored to remove Matillion functionality - Pail pure focus
 """
 import os
 import logging

@@ -1,4 +1,4 @@
 """
-Core module for S3 Crawler application
+Core module for Pail application
 Contains core functionality for S3 operations and credential management
 """

@@ -5,7 +5,7 @@ REM Run from the directory that contains this script
 cd /d "%~dp0"
 
 echo ============================================
-echo   Pail / Salamand3r - S3 File Mover
+echo   Pail
 echo ============================================
 echo.
 

@@ -1,4 +1,4 @@
 """
-Utility functions and classes for S3 Crawler application
+Utility functions and classes for Pail application
 Contains utility functions for themes and custom widgets
 """

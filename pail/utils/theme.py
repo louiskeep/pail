@@ -1,7 +1,7 @@
 # utils/theme.py
 
 """
-Theme management for the S3 Crawler application
+Theme management for the Pail application
 Provides functionality for loading and applying themes
 Converted from the Tkinter theming in the original application
 """

@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 
 echo "============================================"
-echo "  Pail / Salamand3r - S3 File Mover"
+echo "  Pail"
 echo "============================================"
 echo
 

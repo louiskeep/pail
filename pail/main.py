@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 
 """
-S3 Crawler - PyQt6 Version
+Pail - PyQt6 Version
 Pure S3 Browser Application - Main entry point
 
 Refactored to focus solely on S3 browsing functionality.
@@ -38,7 +38,7 @@ def main():
     """Main application entry point"""
     # Create QApplication instance
     app = QApplication(sys.argv)
-    app.setApplicationName("S3 Crawler")
+    app.setApplicationName("Pail")
     app.setOrganizationName("Telligen")
     
     # Set application icon
@@ -49,7 +49,7 @@ def main():
     # Create and configure splash screen
     splash_pixmap = QPixmap(icon_path) if os.path.exists(icon_path) else QPixmap(256, 256)
     splash = QSplashScreen(splash_pixmap)
-    splash.showMessage("Loading S3 Crawler...", Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter, Qt.GlobalColor.white)
+    splash.showMessage("Loading Pail...", Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter, Qt.GlobalColor.white)
     splash.show()
     
     # Process events to ensure splash screen displays

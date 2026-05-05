@@ -2,7 +2,7 @@
 
 """
 S3 Manager module
-Handles AWS S3 operations for the S3 Crawler application
+Handles AWS S3 operations for the Pail application
 """
 import os
 import boto3
