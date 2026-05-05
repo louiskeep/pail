@@ -137,6 +137,13 @@ def index():
 def login():
     return render_template('login.html')
 
+@app.route('/logout', methods=['POST', 'GET'])
+def logout():
+    session.pop('aws_creds', None)
+    if request.method == 'GET':
+        return redirect(url_for('login'))
+    return jsonify({'success': True})
+
 
 # Login API
 @app.route('/api/login', methods=['POST'])
