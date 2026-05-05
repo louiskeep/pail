@@ -510,53 +510,69 @@ const Sidebar = ({ active, onSelect, onLogout }) => (
 );
 
 // ─── Divider ──────────────────────────────────────────────────────────────────
-const Divider = ({ onResize }) => {
+const Divider = ({ orientation, onResize }) => {
   const isDragging = useRef(false);
+  const isHoriz = orientation === 'horizontal'; // panels stacked side-by-side ⇒ vertical splitter bar
   const onMouseDown = (e) => {
     e.preventDefault();
     isDragging.current = true;
-    const onMove = (ev) => { if (isDragging.current) onResize(ev.clientY); };
+    const onMove = (ev) => {
+      if (!isDragging.current) return;
+      onResize(isHoriz ? ev.clientX : ev.clientY);
+    };
     const onUp = () => { isDragging.current = false; };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp, { once: true });
   };
+  const barStyle = isHoriz
+    ? { width: 5, height: '100%', cursor: 'col-resize' }
+    : { height: 5, width: '100%', cursor: 'row-resize' };
+  const handleStyle = isHoriz
+    ? { width: 2, height: 32, borderRadius: 2, background: '#d1d5db' }
+    : { width: 32, height: 2, borderRadius: 2, background: '#d1d5db' };
   return (
     <div onMouseDown={onMouseDown}
-      style={{ height: 5, background: '#f0f2f5', cursor: 'row-resize', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}
+      style={{ background: '#f0f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s', ...barStyle }}
       onMouseEnter={e => e.currentTarget.style.background = '#e5e7eb'}
       onMouseLeave={e => e.currentTarget.style.background = '#f0f2f5'}>
-      <div style={{ width: 32, height: 2, borderRadius: 2, background: '#d1d5db' }} />
+      <div style={handleStyle} />
     </div>
   );
 };
 
 // ─── Action Bar ───────────────────────────────────────────────────────────────
-const ActionBar = ({ onCopyDown, onMoveDown, onSwap }) => (
-  <div style={{ height: 34, background: '#f8f9fa', borderTop: '1px solid #f0f2f5', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', gap: 4, padding: '0 12px', flexShrink: 0 }}>
-    <span style={{ fontSize: 11, color: '#9ca3af', marginRight: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</span>
-    {[
-      { label: 'Copy ↓', icon: 'copy', action: onCopyDown },
-      { label: 'Move ↓', icon: 'move', action: onMoveDown },
-      { label: 'Swap', icon: 'refresh', action: onSwap },
-    ].map(btn => (
-      <button key={btn.label} onClick={btn.action}
-        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid #e5e7eb', borderRadius: 5, background: '#fff', fontSize: 12, cursor: 'pointer', color: '#374151', fontFamily: 'IBM Plex Sans', transition: 'all 0.1s' }}
-        onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.borderColor = '#d1d5db'; }}
-        onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#e5e7eb'; }}>
-        <Icon name={btn.icon} size={13} color="#6b7280" />
-        {btn.label}
-      </button>
-    ))}
-    <div style={{ flex: 1 }} />
-    <span style={{ fontSize: 11, color: '#b0b7c3', fontFamily: 'IBM Plex Mono' }}>s3://  ↑ drag & drop ↓  s3://</span>
-  </div>
-);
+const ActionBar = ({ orientation, onCopyDown, onMoveDown, onSwap }) => {
+  const arrow = orientation === 'horizontal' ? '→' : '↓';
+  return (
+    <div style={{ height: 34, background: '#f8f9fa', borderTop: '1px solid #f0f2f5', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', gap: 4, padding: '0 12px', flexShrink: 0 }}>
+      <span style={{ fontSize: 11, color: '#9ca3af', marginRight: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</span>
+      {[
+        { label: `Copy ${arrow}`, icon: 'copy', action: onCopyDown },
+        { label: `Move ${arrow}`, icon: 'move', action: onMoveDown },
+        { label: 'Swap', icon: 'refresh', action: onSwap },
+      ].map(btn => (
+        <button key={btn.label} onClick={btn.action}
+          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid #e5e7eb', borderRadius: 5, background: '#fff', fontSize: 12, cursor: 'pointer', color: '#374151', fontFamily: 'IBM Plex Sans', transition: 'all 0.1s' }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.borderColor = '#d1d5db'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#e5e7eb'; }}>
+          <Icon name={btn.icon} size={13} color="#6b7280" />
+          {btn.label}
+        </button>
+      ))}
+      <div style={{ flex: 1 }} />
+      <span style={{ fontSize: 11, color: '#b0b7c3', fontFamily: 'IBM Plex Mono' }}>s3://  drag & drop  s3://</span>
+    </div>
+  );
+};
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 const App = () => {
   const [toast, setToast] = useState(null);
   const [activeNav, setActiveNav] = useState('s3');
   const [topH, setTopH] = useState(null);
+  const [layout, setLayout] = useState(() => {
+    try { return localStorage.getItem('pail.layout') || 'vertical'; } catch { return 'vertical'; }
+  });
   const [dragState, setDragState] = useState(null);
   const [buckets, setBuckets] = useState([]);
   const [topPanel, setTopPanel] = useState({ bucket: '', prefix: '', files: [], loading: false });
@@ -581,12 +597,23 @@ const App = () => {
     });
   }, []);
 
-  const handleDividerResize = useCallback((clientY) => {
+  const handleDividerResize = useCallback((coord) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
-    const frac = (clientY - rect.top) / rect.height;
+    const frac = layout === 'horizontal'
+      ? (coord - rect.left) / rect.width
+      : (coord - rect.top) / rect.height;
     setTopH(Math.max(0.2, Math.min(0.8, frac)) * 100);
-  }, []);
+  }, [layout]);
+
+  const toggleLayout = () => {
+    setLayout(l => {
+      const next = l === 'vertical' ? 'horizontal' : 'vertical';
+      try { localStorage.setItem('pail.layout', next); } catch {}
+      setTopH(null); // reset split to 50/50 on layout change
+      return next;
+    });
+  };
 
   const transferAcross = async (op) => {
     const src = topPanel, dst = bottomPanel;
@@ -628,25 +655,43 @@ const App = () => {
           <span style={{ fontWeight: 600, fontSize: 14, color: '#1f2937' }}>S3 File Manager</span>
           <span style={{ fontSize: 12, color: '#9ca3af' }}>boto3 / s3</span>
           <div style={{ flex: 1 }} />
+          <button onClick={toggleLayout}
+            title={layout === 'vertical' ? 'Switch to side-by-side layout' : 'Switch to top/bottom layout'}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', fontSize: 12, cursor: 'pointer', color: '#374151', fontFamily: 'IBM Plex Sans' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#fff'; }}>
+            {layout === 'vertical' ? (
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="12" rx="1" stroke="#6b7280" strokeWidth="1.2"/><rect x="9" y="2" width="5" height="12" rx="1" stroke="#6b7280" strokeWidth="1.2"/></svg>
+            ) : (
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="5" rx="1" stroke="#6b7280" strokeWidth="1.2"/><rect x="2" y="9" width="12" height="5" rx="1" stroke="#6b7280" strokeWidth="1.2"/></svg>
+            )}
+            {layout === 'vertical' ? 'Side-by-side' : 'Top / bottom'}
+          </button>
           <span style={{ fontSize: 11.5, color: '#9ca3af', fontFamily: 'IBM Plex Mono' }}>{buckets.length} bucket{buckets.length === 1 ? '' : 's'}</span>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: buckets.length ? '#34D399' : '#9ca3af' }} title={buckets.length ? 'Connected' : 'Not connected'} />
         </div>
 
-        <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ height: topH ? `${topH}%` : '50%', overflow: 'hidden' }}>
-            <FilePanel panelId="top" label="Top" buckets={buckets} panelState={topPanel} setPanelState={setTopPanel} onToast={onToast} dragState={dragState} setDragState={setDragState} transferRef={transferRef} />
+        <ActionBar
+          orientation={layout}
+          onCopyDown={() => transferAcross('copy')}
+          onMoveDown={() => transferAcross('move')}
+          onSwap={handleSwap}
+        />
+
+        <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: layout === 'horizontal' ? 'row' : 'column', overflow: 'hidden' }}>
+          <div style={{
+            ...(layout === 'horizontal'
+              ? { width: topH ? `${topH}%` : '50%', height: '100%' }
+              : { height: topH ? `${topH}%` : '50%', width: '100%' }),
+            overflow: 'hidden'
+          }}>
+            <FilePanel panelId="top" label={layout === 'horizontal' ? 'L' : 'Top'} buckets={buckets} panelState={topPanel} setPanelState={setTopPanel} onToast={onToast} dragState={dragState} setDragState={setDragState} transferRef={transferRef} />
           </div>
 
-          <ActionBar
-            onCopyDown={() => transferAcross('copy')}
-            onMoveDown={() => transferAcross('move')}
-            onSwap={handleSwap}
-          />
-
-          <Divider onResize={handleDividerResize} />
+          <Divider orientation={layout} onResize={handleDividerResize} />
 
           <div style={{ flex: 1, overflow: 'hidden' }}>
-            <FilePanel panelId="bottom" label="Bot" buckets={buckets} panelState={bottomPanel} setPanelState={setBottomPanel} onToast={onToast} dragState={dragState} setDragState={setDragState} transferRef={transferRef} />
+            <FilePanel panelId="bottom" label={layout === 'horizontal' ? 'R' : 'Bot'} buckets={buckets} panelState={bottomPanel} setPanelState={setBottomPanel} onToast={onToast} dragState={dragState} setDragState={setDragState} transferRef={transferRef} />
           </div>
         </div>
       </div>
