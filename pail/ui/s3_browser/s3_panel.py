@@ -2,7 +2,7 @@
 
 """
 S3 Panel module (Web version)
-Logic for S3 browser in the S3 Crawler application (browser-based)
+Logic for S3 browser in the Pail application (browser-based)
 """
 import os
 import json

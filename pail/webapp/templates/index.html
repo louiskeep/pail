@@ -1,82 +1,708 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S3 Bucket Explorer</title>
-    <link rel="stylesheet" href="/static/main.css">
-    <link rel="stylesheet" href="/static/explorer.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; width: 100%; overflow: hidden; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: #f0f2f5; }
+</style>
 </head>
 <body>
-    <div class="header-box">
-        <h1>Salamand3r</h1>
-        <h2>S3 Explorer</h2>
+<div id="root"></div>
+{% raw %}
+<script type="text/babel">
+const { useState, useRef, useCallback, useEffect } = React;
+
+// ─── API helpers ──────────────────────────────────────────────────────────────
+const api = {
+  async listBuckets() {
+    const r = await fetch('/api/buckets', { credentials: 'same-origin' });
+    if (r.status === 401) { window.location = '/login'; return []; }
+    const j = await r.json();
+    return (j.buckets || []).map(b => b.Name || b);
+  },
+  async listObjects(bucket, prefix) {
+    const r = await fetch(`/api/buckets/${encodeURIComponent(bucket)}/objects?prefix=${encodeURIComponent(prefix)}`, { credentials: 'same-origin' });
+    if (r.status === 401) { window.location = '/login'; return []; }
+    const j = await r.json();
+    return j.objects || [];
+  },
+  async copy(srcBucket, srcKey, destBucket, destKey) {
+    const r = await fetch(`/api/buckets/${encodeURIComponent(srcBucket)}/copy`, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source_key: srcKey, dest_bucket: destBucket, dest_key: destKey }),
+    });
+    return r.json();
+  },
+  async move(srcBucket, srcKey, destBucket, destKey) {
+    const r = await fetch(`/api/buckets/${encodeURIComponent(srcBucket)}/move`, {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source_key: srcKey, dest_bucket: destBucket, dest_key: destKey }),
+    });
+    return r.json();
+  },
+  async deleteObject(bucket, key) {
+    const r = await fetch(`/api/buckets/${encodeURIComponent(bucket)}/objects`, {
+      method: 'DELETE', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key }),
+    });
+    return r.json();
+  },
+  downloadUrl(bucket, key) {
+    return `/api/buckets/${encodeURIComponent(bucket)}/download?key=${encodeURIComponent(key)}`;
+  },
+  async previewText(bucket, key) {
+    const r = await fetch(api.downloadUrl(bucket, key), { credentials: 'same-origin' });
+    if (!r.ok) throw new Error('Download failed');
+    return r.text();
+  },
+};
+
+const formatSize = (bytes) => {
+  if (bytes === 0 || bytes == null) return '—';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0; let n = bytes;
+  while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+  return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
+};
+
+const formatDate = (iso) => {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d)) return '—';
+    return d.toISOString().slice(0, 10);
+  } catch { return '—'; }
+};
+
+const extOf = (name) => {
+  const i = name.lastIndexOf('.');
+  return i >= 0 ? name.slice(i + 1).toLowerCase() : '';
+};
+
+// Convert backend object → UI row
+const toRow = (obj) => {
+  const isFolder = !!obj.IsFolder;
+  const name = obj.DisplayName || (isFolder ? obj.Key.replace(/\/$/, '').split('/').pop() : obj.Key.split('/').pop());
+  return {
+    id: obj.Key,
+    key: obj.Key,
+    name,
+    type: isFolder ? 'folder' : extOf(name),
+    size: isFolder ? '—' : formatSize(obj.Size),
+    modified: formatDate(obj.LastModified),
+    isFolder,
+    selected: false,
+  };
+};
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
+const Icon = ({ name, size = 16, color = 'currentColor' }) => {
+  const icons = {
+    folder: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M1.5 3.5A1 1 0 012.5 2.5h3.086a1 1 0 01.707.293L7.5 4h6a1 1 0 011 1v7a1 1 0 01-1 1h-11a1 1 0 01-1-1V4.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" fill="none"/><path d="M1.5 4.5h13" stroke={color} strokeWidth="1.2"/></svg>,
+    file: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke={color} strokeWidth="1.2" fill="none"/><path d="M10 2v3h3" stroke={color} strokeWidth="1.2" fill="none"/></svg>,
+    py: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#3B82F6" strokeWidth="1.2" fill="#EFF6FF"/><text x="8" y="11" textAnchor="middle" fontSize="5" fill="#3B82F6" fontFamily="monospace" fontWeight="bold">py</text></svg>,
+    json: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#F59E0B" strokeWidth="1.2" fill="#FFFBEB"/><text x="8" y="11" textAnchor="middle" fontSize="4.5" fill="#D97706" fontFamily="monospace" fontWeight="bold">JSON</text></svg>,
+    md: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#6B7280" strokeWidth="1.2" fill="#F9FAFB"/><text x="8" y="11" textAnchor="middle" fontSize="4.5" fill="#6B7280" fontFamily="monospace" fontWeight="bold">MD</text></svg>,
+    csv: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#10B981" strokeWidth="1.2" fill="#ECFDF5"/><text x="8" y="11" textAnchor="middle" fontSize="4.5" fill="#059669" fontFamily="monospace" fontWeight="bold">CSV</text></svg>,
+    parquet: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#8B5CF6" strokeWidth="1.2" fill="#F5F3FF"/><text x="8" y="11" textAnchor="middle" fontSize="3.8" fill="#7C3AED" fontFamily="monospace" fontWeight="bold">PAR</text></svg>,
+    pdf: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#EF4444" strokeWidth="1.2" fill="#FEF2F2"/><text x="8" y="11" textAnchor="middle" fontSize="4.5" fill="#DC2626" fontFamily="monospace" fontWeight="bold">PDF</text></svg>,
+    img: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#EC4899" strokeWidth="1.2" fill="#FDF2F8"/><circle cx="6" cy="7.5" r="1.2" fill="#EC4899"/><path d="M3 11.5l3-3 2 2 1.5-1.5L12 11.5" stroke="#EC4899" strokeWidth="1" fill="none"/></svg>,
+    s3: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5v6L8 14 2 11V5L8 2z" stroke={color} strokeWidth="1.2" fill="none"/><path d="M2 5l6 3 6-3M8 8v6" stroke={color} strokeWidth="1.2"/></svg>,
+    chevronRight: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    chevronDown: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    close: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke={color} strokeWidth="1.5" strokeLinecap="round"/></svg>,
+    copy: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="9" rx="1" stroke={color} strokeWidth="1.2" fill="none"/><path d="M3 11V3a1 1 0 011-1h8" stroke={color} strokeWidth="1.2" strokeLinecap="round"/></svg>,
+    move: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M2 8h12M10 5l3 3-3 3" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    download: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    preview: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke={color} strokeWidth="1.2" fill="none"/><circle cx="8" cy="8" r="2" stroke={color} strokeWidth="1.2" fill="none"/></svg>,
+    delete: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 5h10M6 5V3h4v2M6 8v4M10 8v4M4 5l.8 8a1 1 0 001 .9h4.4a1 1 0 001-.9L12 5" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    refresh: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M13 8A5 5 0 113.5 4.5L6 7" stroke={color} strokeWidth="1.3" strokeLinecap="round"/><path d="M3 3h3v3" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    lambda: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 13L7 3l2 4 4 6M9 7h4" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    dynamo: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="5" rx="5" ry="2" stroke={color} strokeWidth="1.2" fill="none"/><path d="M3 5v3c0 1.1 2.24 2 5 2s5-.9 5-2V5" stroke={color} strokeWidth="1.2"/><path d="M3 8v3c0 1.1 2.24 2 5 2s5-.9 5-2V8" stroke={color} strokeWidth="1.2"/></svg>,
+    ec2: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="8" rx="1.5" stroke={color} strokeWidth="1.2" fill="none"/><circle cx="8" cy="8" r="2" stroke={color} strokeWidth="1.2" fill="none"/><path d="M5 2v2M11 2v2M5 12v2M11 12v2" stroke={color} strokeWidth="1.2" strokeLinecap="round"/></svg>,
+    iam: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="2.5" stroke={color} strokeWidth="1.2" fill="none"/><path d="M3 14c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke={color} strokeWidth="1.2" strokeLinecap="round" fill="none"/></svg>,
+    settings: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke={color} strokeWidth="1.2" fill="none"/><path d="M8 1.5v1.7M8 12.8v1.7M1.5 8h1.7M12.8 8h1.7M3.7 3.7l1.2 1.2M11.1 11.1l1.2 1.2M12.3 3.7l-1.2 1.2M4.9 11.1l-1.2 1.2" stroke={color} strokeWidth="1.2" strokeLinecap="round"/></svg>,
+    logout: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M9 3H4a1 1 0 00-1 1v8a1 1 0 001 1h5M11 5l3 3-3 3M14 8H7" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+  };
+  return icons[name] || icons.file;
+};
+
+const getFileIcon = (type) => {
+  const map = { folder: 'folder', py: 'py', json: 'json', md: 'md', csv: 'csv', parquet: 'parquet', pdf: 'pdf', png: 'img', jpg: 'img', jpeg: 'img', gif: 'img', svg: 'img', ico: 'img', xlsx: 'csv', yaml: 'json', yml: 'json', sh: 'py', txt: 'md' };
+  return map[type] || 'file';
+};
+
+// ─── Context Menu ─────────────────────────────────────────────────────────────
+const ContextMenu = ({ x, y, items, onClose }) => {
+  const ref = useRef();
+  useEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [onClose]);
+
+  const top = Math.min(y, window.innerHeight - 200);
+  const left = Math.min(x, window.innerWidth - 180);
+
+  return (
+    <div ref={ref} style={{ position: 'fixed', top, left, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 1000, minWidth: 170, padding: '4px 0', fontSize: 13 }}>
+      {items.map((item, i) =>
+        item === '---' ? (
+          <div key={i} style={{ height: 1, background: '#f0f0f0', margin: '3px 0' }} />
+        ) : (
+          <div key={item.label} onClick={() => { item.action(); onClose(); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', cursor: 'pointer', color: item.danger ? '#EF4444' : '#1f2937', transition: 'background 0.1s' }}
+            onMouseEnter={e => e.currentTarget.style.background = item.danger ? '#FEF2F2' : '#f3f4f6'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <Icon name={item.icon} size={14} color={item.danger ? '#EF4444' : '#6b7280'} />
+            {item.label}
+          </div>
+        )
+      )}
     </div>
-    <div class="explorer-pane-wrapper" style="display: flex; flex-direction: column; align-items: stretch; gap: 20px;">
-        <div class="explorer-pane" id="explorer-pane-1" style="height: 400px; overflow:hidden;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <label for="bucket-select-1">Select a bucket:</label>
-                <select id="bucket-select-1">
-                    <option>Loading...</option>
-                </select>
-            </div>
-            <div id="prefix-path-1" class="prefix-path" style="margin: 0 0 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+  );
+};
+
+// ─── Preview Modal ────────────────────────────────────────────────────────────
+const PreviewModal = ({ bucket, file, onClose }) => {
+  const [content, setContent] = useState('Loading…');
+  useEffect(() => {
+    let cancelled = false;
+    api.previewText(bucket, file.key).then(text => {
+      if (!cancelled) setContent(text);
+    }).catch(e => { if (!cancelled) setContent(`(Could not preview: ${e.message})`); });
+    return () => { cancelled = true; };
+  }, [bucket, file.key]);
+  const lines = content.split('\n').slice(0, 25);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: '#fff', borderRadius: 12, width: 600, maxHeight: '70vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Icon name={getFileIcon(file.type)} size={16} />
+            <span style={{ fontWeight: 600, fontSize: 14, fontFamily: 'IBM Plex Mono' }}>{file.name}</span>
+            <span style={{ fontSize: 12, color: '#9ca3af', background: '#f3f4f6', padding: '2px 7px', borderRadius: 4 }}>top 25 lines</span>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', color: '#9ca3af' }}>
+            <Icon name="close" size={16} color="#9ca3af" />
+          </button>
         </div>
-        <div id="error-message-1" style="color:red;"></div>
-            <input type="text" id="search-input-1" class="explorer-search" placeholder="Search files/folders..." autocomplete="off" />
-            <div class="explorer-table-scroll">
-                <table class="explorer-table" id="explorer-table-1">
-                    <thead>
-                        <tr>
-                            <th id="sort-name-1" class="sortable">Name</th>
-                            <th>Type</th>
-                            <th id="sort-size-1" class="sortable">Size</th>
-                            <th id="sort-modified-1" class="sortable">Last Modified</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Contents will be populated by JS -->
-                    </tbody>
-                </table>
+        <div style={{ overflow: 'auto', flex: 1, background: '#1e1e2e' }}>
+          <pre style={{ fontFamily: 'IBM Plex Mono', fontSize: 12.5, lineHeight: 1.7, padding: '16px 20px', color: '#cdd6f4', margin: 0 }}>
+            {lines.map((line, i) => (
+              <div key={i} style={{ display: 'flex', gap: 16 }}>
+                <span style={{ color: '#45475a', userSelect: 'none', minWidth: 28, textAlign: 'right' }}>{i + 1}</span>
+                <span>{line}</span>
+              </div>
+            ))}
+          </pre>
+        </div>
+        <div style={{ padding: '10px 18px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', fontSize: 13, cursor: 'pointer', fontFamily: 'IBM Plex Sans' }}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+const Toast = ({ message, kind, onDone }) => {
+  useEffect(() => { const t = setTimeout(onDone, 2600); return () => clearTimeout(t); }, []);
+  const isErr = kind === 'error';
+  return (
+    <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: isErr ? '#7f1d1d' : '#1f2937', color: '#fff', padding: '9px 18px', borderRadius: 8, fontSize: 13, zIndex: 3000, boxShadow: '0 4px 16px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span style={{ color: isErr ? '#fca5a5' : '#34D399' }}>{isErr ? '✕' : '✓'}</span> {message}
+    </div>
+  );
+};
+
+// ─── File Panel ───────────────────────────────────────────────────────────────
+const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast, dragState, setDragState, transferRef }) => {
+  const { bucket, prefix, files, loading } = panelState;
+  const [selected, setSelected] = useState(new Set());
+  const [contextMenu, setContextMenu] = useState(null);
+  const [previewFile, setPreviewFile] = useState(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [showBucketDropdown, setShowBucketDropdown] = useState(false);
+  const listRef = useRef();
+
+  const breadcrumbs = prefix ? ['root', ...prefix.slice(0, -1).split('/')] : ['root'];
+
+  const reload = useCallback(async (b = bucket, p = prefix) => {
+    if (!b) return;
+    setPanelState(s => ({ ...s, loading: true }));
+    const objs = await api.listObjects(b, p);
+    setPanelState(s => ({ ...s, bucket: b, prefix: p, files: objs.map(toRow), loading: false }));
+    setSelected(new Set());
+  }, [bucket, prefix, setPanelState]);
+
+  // Expose reload via ref for cross-panel refresh after copy/move
+  useEffect(() => { transferRef.current[panelId] = reload; }, [reload, panelId, transferRef]);
+
+  const navigateTo = (b, p) => { reload(b, p); };
+
+  const openFolder = (folder) => {
+    // folder.key is full prefix already (ends with /)
+    navigateTo(bucket, folder.key);
+  };
+
+  const navigateBreadcrumb = (idx) => {
+    if (idx === 0) { navigateTo(bucket, ''); return; }
+    const parts = prefix.split('/').filter(Boolean);
+    navigateTo(bucket, parts.slice(0, idx).join('/') + '/');
+  };
+
+  const toggleSelect = (id, e) => {
+    setSelected(prev => {
+      const next = new Set(e.shiftKey || e.metaKey || e.ctrlKey ? prev : []);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleDblClick = (file) => {
+    if (file.isFolder) { openFolder(file); return; }
+    setPreviewFile(file);
+  };
+
+  const doDownload = (file) => {
+    const a = document.createElement('a');
+    a.href = api.downloadUrl(bucket, file.key);
+    a.download = file.name;
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+
+  const doDelete = async (selFiles) => {
+    if (!selFiles.length) return;
+    if (!confirm(`Delete ${selFiles.length} item${selFiles.length > 1 ? 's' : ''}?`)) return;
+    let ok = 0, fail = 0;
+    for (const f of selFiles) {
+      if (f.isFolder) { fail++; continue; } // skip folders for now
+      const r = await api.deleteObject(bucket, f.key);
+      if (r.success) ok++; else fail++;
+    }
+    onToast(fail ? `Deleted ${ok}, ${fail} failed` : `Deleted ${ok}`, fail ? 'error' : 'ok');
+    reload();
+  };
+
+  const handleContextMenu = (e, file) => {
+    e.preventDefault();
+    let sel = selected;
+    if (!sel.has(file.id)) { sel = new Set([file.id]); setSelected(sel); }
+    const selFiles = files.filter(f => sel.has(f.id));
+    const multi = selFiles.length > 1;
+    const isFolder = file.isFolder;
+    setContextMenu({
+      x: e.clientX, y: e.clientY,
+      items: [
+        !isFolder && !multi && { label: 'Preview (top 25 lines)', icon: 'preview', action: () => setPreviewFile(file) },
+        !isFolder && !multi && { label: 'Download', icon: 'download', action: () => doDownload(file) },
+        '---',
+        { label: 'Delete', icon: 'delete', danger: true, action: () => doDelete(selFiles) },
+      ].filter(Boolean),
+    });
+  };
+
+  const handleDragStart = (e, file) => {
+    let dragging;
+    if (selected.has(file.id)) {
+      dragging = files.filter(f => selected.has(f.id));
+    } else {
+      dragging = [file];
+      setSelected(new Set([file.id]));
+    }
+    setDragState({ files: dragging.filter(f => !f.isFolder), fromBucket: bucket, fromPrefix: prefix, fromPanel: panelId });
+    e.dataTransfer.effectAllowed = 'copyMove';
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (!dragState || dragState.fromPanel === panelId) { setDragState(null); return; }
+    const op = e.ctrlKey || e.metaKey ? 'copy' : 'move';
+    const { files: dragFiles, fromBucket } = dragState;
+    if (!dragFiles.length) { setDragState(null); onToast('Nothing to transfer (folders are not supported yet)', 'error'); return; }
+    let ok = 0, fail = 0;
+    for (const f of dragFiles) {
+      const destKey = prefix + f.name;
+      const fn = op === 'copy' ? api.copy : api.move;
+      const r = await fn(fromBucket, f.key, bucket, destKey);
+      if (r.success) ok++; else fail++;
+    }
+    onToast(fail ? `${op === 'copy' ? 'Copied' : 'Moved'} ${ok}, ${fail} failed` : `${op === 'copy' ? 'Copied' : 'Moved'} ${ok} item${ok > 1 ? 's' : ''}`, fail ? 'error' : 'ok');
+    setDragState(null);
+    reload();
+    // If move, reload source too
+    if (op === 'move') {
+      const otherReload = transferRef.current[dragState.fromPanel];
+      if (otherReload) otherReload();
+    }
+  };
+
+  const selectedCount = selected.size;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fff', position: 'relative' }}
+      onDragOver={e => { e.preventDefault(); if (dragState && dragState.fromPanel !== panelId) setIsDragOver(true); }}
+      onDragLeave={() => setIsDragOver(false)}
+      onDrop={handleDrop}>
+
+      {isDragOver && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(37,99,235,0.08)', border: '2px dashed #2563EB', borderRadius: 6, zIndex: 10, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ color: '#2563EB', fontWeight: 500, fontSize: 14 }}>Drop to move here (hold Ctrl/⌘ to copy)</span>
+        </div>
+      )}
+
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', gap: 8, background: '#fafafa' }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 32 }}>{label}</span>
+
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => setShowBucketDropdown(v => !v)}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', cursor: 'pointer', fontSize: 12.5, fontFamily: 'IBM Plex Mono', fontWeight: 500, color: '#374151' }}>
+            <Icon name="s3" size={12} color="#F59E0B" />
+            {bucket || '(no bucket)'}
+            <Icon name="chevronDown" size={11} color="#9ca3af" />
+          </button>
+          {showBucketDropdown && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 100, minWidth: 200, padding: '4px 0', maxHeight: 320, overflow: 'auto' }}>
+              {buckets.length === 0 && <div style={{ padding: '8px 12px', color: '#9ca3af', fontSize: 12 }}>No buckets</div>}
+              {buckets.map(b => (
+                <div key={b} onClick={() => { setShowBucketDropdown(false); reload(b, ''); }}
+                  style={{ padding: '7px 12px', cursor: 'pointer', fontSize: 12.5, fontFamily: 'IBM Plex Mono', color: b === bucket ? '#2563EB' : '#374151', background: b === bucket ? '#EFF6FF' : 'transparent', display: 'flex', alignItems: 'center', gap: 7 }}
+                  onMouseEnter={e => { if (b !== bucket) e.currentTarget.style.background = '#f9fafb'; }}
+                  onMouseLeave={e => { if (b !== bucket) e.currentTarget.style.background = 'transparent'; }}>
+                  <Icon name="s3" size={11} color={b === bucket ? '#2563EB' : '#9ca3af'} />
+                  {b}
+                </div>
+              ))}
             </div>
+          )}
         </div>
 
-        <div class="explorer-pane" id="explorer-pane-2" style="height: 400px; overflow:hidden;">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <label for="bucket-select-2">Select a bucket:</label>
-                <select id="bucket-select-2">
-                    <option>Loading...</option>
-                </select>
-            </div>
-            <div id="prefix-path-2" class="prefix-path" style="margin: 0 0 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, overflow: 'hidden' }}>
+          {breadcrumbs.map((crumb, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <Icon name="chevronRight" size={12} color="#d1d5db" />}
+              <button onClick={() => navigateBreadcrumb(i)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: i === breadcrumbs.length - 1 ? '#374151' : '#6b7280', fontFamily: 'IBM Plex Mono', padding: '2px 4px', borderRadius: 3 }}
+                onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                {crumb}
+              </button>
+            </React.Fragment>
+          ))}
         </div>
-        <div id="error-message-2" style="color:red;"></div>
-            <input type="text" id="search-input-2" class="explorer-search" placeholder="Search files/folders..." autocomplete="off" />
-            <div class="explorer-table-scroll">
-                <table class="explorer-table" id="explorer-table-2">
-                    <thead>
-                        <tr>
-                            <th id="sort-name-2" class="sortable">Name</th>
-                            <th>Type</th>
-                            <th id="sort-size-2" class="sortable">Size</th>
-                            <th id="sort-modified-2" class="sortable">Last Modified</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Contents will be populated by JS -->
-                    </tbody>
-                </table>
+
+        {selectedCount > 0 && (
+          <span style={{ fontSize: 11.5, color: '#2563EB', fontWeight: 500 }}>{selectedCount} selected</span>
+        )}
+
+        <button onClick={() => reload()}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', color: '#9ca3af' }}
+          title="Refresh">
+          <Icon name="refresh" size={14} color="#9ca3af" />
+        </button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', gap: 0, padding: '5px 12px', borderBottom: '1px solid #f0f2f5', background: '#fafafa' }}>
+        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Name</span>
+        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Size</span>
+        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Modified</span>
+      </div>
+
+      <div ref={listRef} style={{ flex: 1, overflow: 'auto' }} onClick={() => setSelected(new Set())}>
+        {prefix && (
+          <div onClick={e => { e.stopPropagation(); navigateBreadcrumb(breadcrumbs.length - 2); }}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', padding: '7px 12px', cursor: 'pointer', borderBottom: '1px solid #f9fafb' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: '#6b7280', fontFamily: 'IBM Plex Mono' }}>
+              <span style={{ fontSize: 14 }}>←</span> ..
+            </span>
+          </div>
+        )}
+
+        {loading && (
+          <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>Loading…</div>
+        )}
+
+        {!loading && files.map((file) => {
+          const isSelected = selected.has(file.id);
+          return (
+            <div key={file.id}
+              draggable={!file.isFolder}
+              onDragStart={e => handleDragStart(e, file)}
+              onClick={e => { e.stopPropagation(); toggleSelect(file.id, e); }}
+              onDoubleClick={() => handleDblClick(file)}
+              onContextMenu={e => handleContextMenu(e, file)}
+              style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', padding: '7px 12px', cursor: 'default', borderBottom: '1px solid #f9fafb', background: isSelected ? '#EFF6FF' : 'transparent', userSelect: 'none', transition: 'background 0.08s' }}
+              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f9fafb'; }}
+              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontFamily: 'IBM Plex Mono', color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <Icon name={getFileIcon(file.type)} size={15} color={file.isFolder ? '#F59E0B' : '#6b7280'} />
+                {file.name}
+              </span>
+              <span style={{ fontSize: 12, color: '#9ca3af', textAlign: 'right', fontFamily: 'IBM Plex Mono' }}>{file.size}</span>
+              <span style={{ fontSize: 12, color: '#9ca3af', textAlign: 'right', fontFamily: 'IBM Plex Mono' }}>{file.modified}</span>
             </div>
-        </div>
+          );
+        })}
+
+        {!loading && files.length === 0 && (
+          <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>No files in this location</div>
+        )}
+      </div>
+
+      {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} onClose={() => setContextMenu(null)} />}
+      {previewFile && <PreviewModal bucket={bucket} file={previewFile} onClose={() => setPreviewFile(null)} />}
     </div>
-</div>
-    <!-- Multi-file operation modal -->
-    {% include 'multi_file_operation_modal.html' %}
-    <link rel="stylesheet" href="/static/multi_file_operation.css">
-    <script src="/static/main.js"></script>
-    <script src="/static/multi_file_operation.js"></script>
+  );
+};
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+const NAV_ITEMS = [
+  { id: 's3', icon: 's3', label: 'S3', active: true },
+  { id: 'lambda', icon: 'lambda', label: 'Lambda' },
+  { id: 'dynamo', icon: 'dynamo', label: 'DynamoDB' },
+  { id: 'ec2', icon: 'ec2', label: 'EC2' },
+  { id: 'iam', icon: 'iam', label: 'IAM' },
+];
+
+const Sidebar = ({ active, onSelect, onLogout }) => (
+  <div style={{ width: 52, background: '#1e2130', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 0', gap: 2, flexShrink: 0 }}>
+    <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2L16 6v6L9 16 2 12V6L9 2z" fill="white" fillOpacity="0.9"/><path d="M9 2v6.5M2 6l7 2.5 7-2.5M9 8.5V16" stroke="#F59E0B" strokeWidth="1.2"/></svg>
+    </div>
+
+    {NAV_ITEMS.map(item => (
+      <div key={item.id} onClick={() => onSelect(item.id)}
+        title={item.label}
+        style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: active === item.id ? 'rgba(245,158,11,0.15)' : 'transparent', color: active === item.id ? '#F59E0B' : '#6b7280', transition: 'all 0.15s', position: 'relative' }}
+        onMouseEnter={e => { if (active !== item.id) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#d1d5db'; }}
+        onMouseLeave={e => { if (active !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280'; } }}>
+        <Icon name={item.icon} size={17} color="currentColor" />
+      </div>
+    ))}
+
+    <div style={{ flex: 1 }} />
+    <div title="Logout" onClick={onLogout}
+      style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6b7280' }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#d1d5db'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280'; }}>
+      <Icon name="logout" size={17} color="currentColor" />
+    </div>
+  </div>
+);
+
+// ─── Divider ──────────────────────────────────────────────────────────────────
+const Divider = ({ orientation, onResize }) => {
+  const isDragging = useRef(false);
+  const isHoriz = orientation === 'horizontal'; // panels stacked side-by-side ⇒ vertical splitter bar
+  const onMouseDown = (e) => {
+    e.preventDefault();
+    isDragging.current = true;
+    const onMove = (ev) => {
+      if (!isDragging.current) return;
+      onResize(isHoriz ? ev.clientX : ev.clientY);
+    };
+    const onUp = () => { isDragging.current = false; };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp, { once: true });
+  };
+  const barStyle = isHoriz
+    ? { width: 5, height: '100%', cursor: 'col-resize' }
+    : { height: 5, width: '100%', cursor: 'row-resize' };
+  const handleStyle = isHoriz
+    ? { width: 2, height: 32, borderRadius: 2, background: '#d1d5db' }
+    : { width: 32, height: 2, borderRadius: 2, background: '#d1d5db' };
+  return (
+    <div onMouseDown={onMouseDown}
+      style={{ background: '#f0f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s', ...barStyle }}
+      onMouseEnter={e => e.currentTarget.style.background = '#e5e7eb'}
+      onMouseLeave={e => e.currentTarget.style.background = '#f0f2f5'}>
+      <div style={handleStyle} />
+    </div>
+  );
+};
+
+// ─── Action Bar ───────────────────────────────────────────────────────────────
+const ActionBar = ({ orientation, onCopyDown, onMoveDown, onSwap }) => {
+  const arrow = orientation === 'horizontal' ? '→' : '↓';
+  return (
+    <div style={{ height: 34, background: '#f8f9fa', borderTop: '1px solid #f0f2f5', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', gap: 4, padding: '0 12px', flexShrink: 0 }}>
+      <span style={{ fontSize: 11, color: '#9ca3af', marginRight: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</span>
+      {[
+        { label: `Copy ${arrow}`, icon: 'copy', action: onCopyDown },
+        { label: `Move ${arrow}`, icon: 'move', action: onMoveDown },
+        { label: 'Swap', icon: 'refresh', action: onSwap },
+      ].map(btn => (
+        <button key={btn.label} onClick={btn.action}
+          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid #e5e7eb', borderRadius: 5, background: '#fff', fontSize: 12, cursor: 'pointer', color: '#374151', fontFamily: 'IBM Plex Sans', transition: 'all 0.1s' }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.borderColor = '#d1d5db'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#e5e7eb'; }}>
+          <Icon name={btn.icon} size={13} color="#6b7280" />
+          {btn.label}
+        </button>
+      ))}
+      <div style={{ flex: 1 }} />
+      <span style={{ fontSize: 11, color: '#b0b7c3', fontFamily: 'IBM Plex Mono' }}>s3://  drag & drop  s3://</span>
+    </div>
+  );
+};
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+const App = () => {
+  const [toast, setToast] = useState(null);
+  const [activeNav, setActiveNav] = useState('s3');
+  const [topH, setTopH] = useState(null);
+  const [layout, setLayout] = useState(() => {
+    try { return localStorage.getItem('pail.layout') || 'vertical'; } catch { return 'vertical'; }
+  });
+  const [dragState, setDragState] = useState(null);
+  const [buckets, setBuckets] = useState([]);
+  const [topPanel, setTopPanel] = useState({ bucket: '', prefix: '', files: [], loading: false });
+  const [bottomPanel, setBottomPanel] = useState({ bucket: '', prefix: '', files: [], loading: false });
+  const containerRef = useRef();
+  const transferRef = useRef({});
+
+  const onToast = (msg, kind) => setToast({ msg, kind });
+
+  useEffect(() => {
+    api.listBuckets().then(bs => {
+      setBuckets(bs);
+      if (bs.length > 0) {
+        setTopPanel(s => ({ ...s, bucket: bs[0] }));
+        setBottomPanel(s => ({ ...s, bucket: bs[Math.min(1, bs.length - 1)] }));
+        // initial loads — defer so refs are set
+        setTimeout(() => {
+          if (transferRef.current.top) transferRef.current.top(bs[0], '');
+          if (transferRef.current.bottom) transferRef.current.bottom(bs[Math.min(1, bs.length - 1)], '');
+        }, 0);
+      }
+    });
+  }, []);
+
+  const handleDividerResize = useCallback((coord) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const frac = layout === 'horizontal'
+      ? (coord - rect.left) / rect.width
+      : (coord - rect.top) / rect.height;
+    setTopH(Math.max(0.2, Math.min(0.8, frac)) * 100);
+  }, [layout]);
+
+  const toggleLayout = () => {
+    setLayout(l => {
+      const next = l === 'vertical' ? 'horizontal' : 'vertical';
+      try { localStorage.setItem('pail.layout', next); } catch {}
+      setTopH(null); // reset split to 50/50 on layout change
+      return next;
+    });
+  };
+
+  const transferAcross = async (op) => {
+    const src = topPanel, dst = bottomPanel;
+    if (!src.bucket || !dst.bucket) { onToast('Select a bucket in both panels', 'error'); return; }
+    const items = src.files.filter(f => !f.isFolder);
+    if (!items.length) { onToast('Top panel has no files to transfer', 'error'); return; }
+    if (!confirm(`${op === 'copy' ? 'Copy' : 'Move'} ${items.length} file(s) from ${src.bucket}/${src.prefix} to ${dst.bucket}/${dst.prefix}?`)) return;
+    let ok = 0, fail = 0;
+    for (const f of items) {
+      const fn = op === 'copy' ? api.copy : api.move;
+      const r = await fn(src.bucket, f.key, dst.bucket, dst.prefix + f.name);
+      if (r.success) ok++; else fail++;
+    }
+    onToast(fail ? `${op === 'copy' ? 'Copied' : 'Moved'} ${ok}, ${fail} failed` : `${op === 'copy' ? 'Copied' : 'Moved'} ${ok}`, fail ? 'error' : 'ok');
+    if (transferRef.current.bottom) transferRef.current.bottom();
+    if (op === 'move' && transferRef.current.top) transferRef.current.top();
+  };
+
+  const handleSwap = () => {
+    setTopPanel(bottomPanel);
+    setBottomPanel(topPanel);
+    setTimeout(() => {
+      if (transferRef.current.top) transferRef.current.top();
+      if (transferRef.current.bottom) transferRef.current.bottom();
+    }, 0);
+  };
+
+  const handleLogout = async () => {
+    await fetch('/logout', { method: 'POST', credentials: 'same-origin' }).catch(() => {});
+    window.location = '/login';
+  };
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+      <Sidebar active={activeNav} onSelect={setActiveNav} onLogout={handleLogout} />
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ height: 42, background: '#fff', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0 }}>
+          <span style={{ fontWeight: 600, fontSize: 14, color: '#1f2937' }}>Pail</span>
+          <span style={{ fontSize: 12, color: '#9ca3af' }}>boto3 / s3</span>
+          <div style={{ flex: 1 }} />
+          <button onClick={toggleLayout}
+            title={layout === 'vertical' ? 'Switch to side-by-side layout' : 'Switch to top/bottom layout'}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', fontSize: 12, cursor: 'pointer', color: '#374151', fontFamily: 'IBM Plex Sans' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#fff'; }}>
+            {layout === 'vertical' ? (
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="12" rx="1" stroke="#6b7280" strokeWidth="1.2"/><rect x="9" y="2" width="5" height="12" rx="1" stroke="#6b7280" strokeWidth="1.2"/></svg>
+            ) : (
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="5" rx="1" stroke="#6b7280" strokeWidth="1.2"/><rect x="2" y="9" width="12" height="5" rx="1" stroke="#6b7280" strokeWidth="1.2"/></svg>
+            )}
+            {layout === 'vertical' ? 'Side-by-side' : 'Top / bottom'}
+          </button>
+          <span style={{ fontSize: 11.5, color: '#9ca3af', fontFamily: 'IBM Plex Mono' }}>{buckets.length} bucket{buckets.length === 1 ? '' : 's'}</span>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: buckets.length ? '#34D399' : '#9ca3af' }} title={buckets.length ? 'Connected' : 'Not connected'} />
+        </div>
+
+        <ActionBar
+          orientation={layout}
+          onCopyDown={() => transferAcross('copy')}
+          onMoveDown={() => transferAcross('move')}
+          onSwap={handleSwap}
+        />
+
+        <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: layout === 'horizontal' ? 'row' : 'column', overflow: 'hidden' }}>
+          <div style={{
+            ...(layout === 'horizontal'
+              ? { width: topH ? `${topH}%` : '50%', height: '100%' }
+              : { height: topH ? `${topH}%` : '50%', width: '100%' }),
+            overflow: 'hidden'
+          }}>
+            <FilePanel panelId="top" label={layout === 'horizontal' ? 'L' : 'Top'} buckets={buckets} panelState={topPanel} setPanelState={setTopPanel} onToast={onToast} dragState={dragState} setDragState={setDragState} transferRef={transferRef} />
+          </div>
+
+          <Divider orientation={layout} onResize={handleDividerResize} />
+
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <FilePanel panelId="bottom" label={layout === 'horizontal' ? 'R' : 'Bot'} buckets={buckets} panelState={bottomPanel} setPanelState={setBottomPanel} onToast={onToast} dragState={dragState} setDragState={setDragState} transferRef={transferRef} />
+          </div>
+        </div>
+      </div>
+
+      {toast && <Toast message={toast.msg} kind={toast.kind} onDone={() => setToast(null)} />}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+{% endraw %}
 </body>
-
 </html>

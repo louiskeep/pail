@@ -1,5 +1,5 @@
 """
-S3 Crawler PyQt6 Application
+Pail PyQt6 Application
 A tool for browsing S3 and interacting with Matillion API
 """
 

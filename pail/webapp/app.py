@@ -1,6 +1,8 @@
 import boto3
+import botocore.session
 from botocore.exceptions import ClientError
 import re
+from datetime import timedelta
 from flask import Flask, jsonify, render_template, request, send_file, session, redirect, url_for
 import sys
 import os
@@ -9,6 +11,7 @@ from core.s3_manager import S3Manager
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'devsecret')
+app.permanent_session_lifetime = timedelta(days=7)
 
 
 # Copy an object between buckets
@@ -112,19 +115,33 @@ def dev_aws_creds():
                     creds['region'] = m.group(1).strip()
     return jsonify(creds)
 
+def _build_session(creds):
+    region = creds.get('region') or 'us-east-1'
+    mode = creds.get('mode', 'keys')
+    if mode == 'profile':
+        return boto3.Session(profile_name=creds.get('profile'), region_name=region), region
+    if mode == 'default':
+        return boto3.Session(region_name=region), region
+    return boto3.Session(
+        aws_access_key_id=creds.get('access_key'),
+        aws_secret_access_key=creds.get('secret_key'),
+        aws_session_token=creds.get('session_token') or None,
+        region_name=region,
+    ), region
+
 def get_s3_manager():
     creds = session.get('aws_creds')
     if not creds:
         return None
-    mgr = S3Manager(
-        access_key=creds.get('access_key'),
-        secret_key=creds.get('secret_key'),
-        session_token=creds.get('session_token'),
-        region=creds.get('region')
-    )
-    if not mgr.is_connected():
+    try:
+        sess, region = _build_session(creds)
+        if not S3Manager.connect_with_session(sess, region):
+            return None
+        mgr = S3Manager()
+        return mgr if mgr.is_connected() else None
+    except Exception as e:
+        print(f"[DEBUG] get_s3_manager failed: {e}")
         return None
-    return mgr
 
 
 @app.route('/')
@@ -137,33 +154,65 @@ def index():
 def login():
     return render_template('login.html')
 
+@app.route('/logout', methods=['POST', 'GET'])
+def logout():
+    session.pop('aws_creds', None)
+    if request.method == 'GET':
+        return redirect(url_for('login'))
+    return jsonify({'success': True})
 
-# Login API
+
+# Auth options: list available AWS profiles and whether the default chain works
+@app.route('/api/auth-options')
+def api_auth_options():
+    try:
+        bcs = botocore.session.Session()
+        profiles = sorted(bcs.available_profiles)
+    except Exception:
+        profiles = []
+    has_default = False
+    try:
+        s = boto3.Session()
+        has_default = s.get_credentials() is not None
+    except Exception:
+        has_default = False
+    return jsonify({'profiles': profiles, 'has_default': has_default})
+
+# Login API — supports three modes: keys, profile, default
 @app.route('/api/login', methods=['POST'])
 def api_login():
-    data = request.get_json()
-    access_key = data.get('access_key')
-    secret_key = data.get('secret_key')
-    session_token = data.get('session_token')
-    region = data.get('region')
-    # Try to authenticate with AWS using session token if provided
+    data = request.get_json() or {}
+    mode = data.get('mode') or ('profile' if data.get('profile') else 'keys')
+    region = data.get('region') or 'us-east-1'
     try:
-        aws_session = boto3.Session(
-            aws_access_key_id=access_key,
-            aws_secret_access_key=secret_key,
-            aws_session_token=session_token if session_token else None,
-            region_name=region
-        )
-        s3 = aws_session.client('s3')
-        # Simple call to verify credentials
-        s3.list_buckets()
-        # Store credentials in Flask session for authentication
-        session['aws_creds'] = {
-            'access_key': access_key,
-            'secret_key': secret_key,
-            'session_token': session_token,
-            'region': region
-        }
+        if mode == 'profile':
+            aws_session = boto3.Session(profile_name=data.get('profile'), region_name=region)
+            creds_record = {'mode': 'profile', 'profile': data.get('profile'), 'region': region}
+        elif mode == 'default':
+            aws_session = boto3.Session(region_name=region)
+            creds_record = {'mode': 'default', 'region': region}
+        else:
+            access_key = data.get('access_key')
+            secret_key = data.get('secret_key')
+            session_token = data.get('session_token')
+            aws_session = boto3.Session(
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_key,
+                aws_session_token=session_token if session_token else None,
+                region_name=region,
+            )
+            creds_record = {
+                'mode': 'keys',
+                'access_key': access_key,
+                'secret_key': secret_key,
+                'session_token': session_token,
+                'region': region,
+            }
+        if aws_session.get_credentials() is None:
+            return jsonify({'success': False, 'error': 'No credentials found for that source.'}), 401
+        aws_session.client('s3').list_buckets()
+        session.permanent = True
+        session['aws_creds'] = creds_record
         return jsonify({'success': True})
     except ClientError as e:
         return jsonify({'success': False, 'error': str(e)}), 401
