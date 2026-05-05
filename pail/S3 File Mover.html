@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AWS S3 Controller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { height: 100%; width: 100%; overflow: hidden; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: #f0f2f5; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useCallback, useEffect } = React;
+
+// ─── Mock Data ────────────────────────────────────────────────────────────────
+const BUCKETS = ['my-app-assets', 'data-lake-prod', 'logs-archive', 'ml-training-sets', 'backups-us-east'];
+
+const mkFile = (name, type, size, modified) => ({ id: Math.random().toString(36).slice(2), name, type, size, modified, selected: false });
+const mkFolder = (name, modified) => ({ id: Math.random().toString(36).slice(2), name, type: 'folder', size: '—', modified, selected: false });
+
+const MOCK_FILES = {
+  'my-app-assets': {
+    '': [
+      mkFolder('images', '2026-04-28'),
+      mkFolder('scripts', '2026-04-15'),
+      mkFolder('configs', '2026-03-10'),
+      mkFile('README.md', 'md', '4.2 KB', '2026-04-30'),
+      mkFile('deploy.sh', 'sh', '1.8 KB', '2026-04-29'),
+      mkFile('package.json', 'json', '2.1 KB', '2026-04-20'),
+    ],
+    'images/': [
+      mkFile('hero.png', 'png', '1.2 MB', '2026-04-28'),
+      mkFile('logo.svg', 'svg', '8.4 KB', '2026-04-28'),
+      mkFile('favicon.ico', 'ico', '15 KB', '2026-04-01'),
+      mkFile('banner-2026.jpg', 'jpg', '342 KB', '2026-04-10'),
+    ],
+    'scripts/': [
+      mkFile('build.py', 'py', '12.4 KB', '2026-04-15'),
+      mkFile('deploy.py', 'py', '8.1 KB', '2026-04-15'),
+      mkFile('utils.py', 'py', '3.3 KB', '2026-03-28'),
+    ],
+    'configs/': [
+      mkFile('prod.yaml', 'yaml', '2.8 KB', '2026-03-10'),
+      mkFile('staging.yaml', 'yaml', '2.8 KB', '2026-03-10'),
+      mkFile('dev.yaml', 'yaml', '2.6 KB', '2026-02-14'),
+    ],
+  },
+  'data-lake-prod': {
+    '': [
+      mkFolder('raw', '2026-04-30'),
+      mkFolder('processed', '2026-04-29'),
+      mkFolder('reports', '2026-04-01'),
+      mkFile('schema.json', 'json', '18.4 KB', '2026-03-15'),
+    ],
+    'raw/': [
+      mkFile('events_2026-04-30.parquet', 'parquet', '12.3 MB', '2026-04-30'),
+      mkFile('events_2026-04-29.parquet', 'parquet', '11.8 MB', '2026-04-29'),
+      mkFile('events_2026-04-28.parquet', 'parquet', '13.1 MB', '2026-04-28'),
+    ],
+    'processed/': [
+      mkFile('daily_summary.csv', 'csv', '4.2 MB', '2026-04-29'),
+      mkFile('user_metrics.csv', 'csv', '8.7 MB', '2026-04-29'),
+    ],
+    'reports/': [
+      mkFile('monthly_report_march.pdf', 'pdf', '2.1 MB', '2026-04-01'),
+      mkFile('q1_summary.xlsx', 'xlsx', '1.4 MB', '2026-04-01'),
+    ],
+  },
+  'logs-archive': {
+    '': [
+      mkFolder('2026', '2026-04-30'),
+      mkFolder('2025', '2025-12-31'),
+      mkFile('index.json', 'json', '44 KB', '2026-04-30'),
+    ],
+    '2026/': [
+      mkFolder('01', '2026-02-01'),
+      mkFolder('02', '2026-03-01'),
+      mkFolder('03', '2026-04-01'),
+      mkFolder('04', '2026-04-30'),
+    ],
+  },
+};
+
+const getFiles = (bucket, prefix) => {
+  const data = MOCK_FILES[bucket];
+  if (!data) return [];
+  return data[prefix] || [];
+};
+
+const FILE_PREVIEW = {
+  'README.md': `# My App Assets
+
+This bucket contains static assets for the production application.
+
+## Structure
+- /images — All image assets
+- /scripts — Build and deploy scripts  
+- /configs — Environment configuration files
+
+## Usage
+Deploy with: \`./deploy.sh production\`
+
+Last updated: April 2026`,
+  'deploy.sh': '#!/bin/bash\nset -e\n\nENV=${1:-staging}\necho "Deploying to $ENV..."\n\naws s3 sync ./dist s3://my-app-assets/ \\\n  --delete \\\n  --cache-control "max-age=86400"\n\necho "Deploy complete."',
+  'package.json': `{
+  "name": "my-app",
+  "version": "2.4.1",
+  "description": "Production web application",
+  "scripts": {
+    "build": "webpack --mode production",
+    "deploy": "./deploy.sh",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}`,
+  'schema.json': `{
+  "version": "2.0",
+  "tables": {
+    "events": {
+      "partition_key": "date",
+      "sort_key": "event_id",
+      "columns": ["user_id", "session_id", "event_type", "timestamp"]
+    },
+    "users": {
+      "partition_key": "user_id",
+      "columns": ["email", "created_at", "plan", "region"]
+    }
+  }
+}`,
+};
+
+// ─── Icons ────────────────────────────────────────────────────────────────────
+const Icon = ({ name, size = 16, color = 'currentColor' }) => {
+  const icons = {
+    folder: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M1.5 3.5A1 1 0 012.5 2.5h3.086a1 1 0 01.707.293L7.5 4h6a1 1 0 011 1v7a1 1 0 01-1 1h-11a1 1 0 01-1-1V4.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" fill="none"/><path d="M1.5 4.5h13" stroke={color} strokeWidth="1.2"/></svg>,
+    file: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke={color} strokeWidth="1.2" fill="none"/><path d="M10 2v3h3" stroke={color} strokeWidth="1.2" fill="none"/></svg>,
+    py: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#3B82F6" strokeWidth="1.2" fill="#EFF6FF"/><text x="8" y="11" textAnchor="middle" fontSize="5" fill="#3B82F6" fontFamily="monospace" fontWeight="bold">py</text></svg>,
+    json: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#F59E0B" strokeWidth="1.2" fill="#FFFBEB"/><text x="8" y="11" textAnchor="middle" fontSize="4.5" fill="#D97706" fontFamily="monospace" fontWeight="bold">JSON</text></svg>,
+    md: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#6B7280" strokeWidth="1.2" fill="#F9FAFB"/><text x="8" y="11" textAnchor="middle" fontSize="4.5" fill="#6B7280" fontFamily="monospace" fontWeight="bold">MD</text></svg>,
+    csv: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#10B981" strokeWidth="1.2" fill="#ECFDF5"/><text x="8" y="11" textAnchor="middle" fontSize="4.5" fill="#059669" fontFamily="monospace" fontWeight="bold">CSV</text></svg>,
+    parquet: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#8B5CF6" strokeWidth="1.2" fill="#F5F3FF"/><text x="8" y="11" textAnchor="middle" fontSize="3.8" fill="#7C3AED" fontFamily="monospace" fontWeight="bold">PAR</text></svg>,
+    pdf: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#EF4444" strokeWidth="1.2" fill="#FEF2F2"/><text x="8" y="11" textAnchor="middle" fontSize="4.5" fill="#DC2626" fontFamily="monospace" fontWeight="bold">PDF</text></svg>,
+    img: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#EC4899" strokeWidth="1.2" fill="#FDF2F8"/><circle cx="6" cy="7.5" r="1.2" fill="#EC4899"/><path d="M3 11.5l3-3 2 2 1.5-1.5L12 11.5" stroke="#EC4899" strokeWidth="1" fill="none"/></svg>,
+    s3: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5v6L8 14 2 11V5L8 2z" stroke={color} strokeWidth="1.2" fill="none"/><path d="M2 5l6 3 6-3M8 8v6" stroke={color} strokeWidth="1.2"/></svg>,
+    chevronRight: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M6 4l4 4-4 4" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    chevronDown: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    close: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke={color} strokeWidth="1.5" strokeLinecap="round"/></svg>,
+    copy: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="9" rx="1" stroke={color} strokeWidth="1.2" fill="none"/><path d="M3 11V3a1 1 0 011-1h8" stroke={color} strokeWidth="1.2" strokeLinecap="round"/></svg>,
+    move: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M2 8h12M10 5l3 3-3 3" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    rename: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M2 13h12M8 11V3M5 6l3-3 3 3" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    download: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 12v1a1 1 0 001 1h10a1 1 0 001-1v-1" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    preview: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z" stroke={color} strokeWidth="1.2" fill="none"/><circle cx="8" cy="8" r="2" stroke={color} strokeWidth="1.2" fill="none"/></svg>,
+    delete: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 5h10M6 5V3h4v2M6 8v4M10 8v4M4 5l.8 8a1 1 0 001 .9h4.4a1 1 0 001-.9L12 5" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    refresh: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M13 8A5 5 0 113.5 4.5L6 7" stroke={color} strokeWidth="1.3" strokeLinecap="round"/><path d="M3 3h3v3" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    home: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M2 7l6-5 6 5v7a1 1 0 01-1 1H3a1 1 0 01-1-1V7z" stroke={color} strokeWidth="1.2" fill="none"/><rect x="6" y="10" width="4" height="4" rx="0.5" stroke={color} strokeWidth="1.2" fill="none"/></svg>,
+    lambda: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><path d="M3 13L7 3l2 4 4 6M9 7h4" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+    dynamo: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="5" rx="5" ry="2" stroke={color} strokeWidth="1.2" fill="none"/><path d="M3 5v3c0 1.1 2.24 2 5 2s5-.9 5-2V5" stroke={color} strokeWidth="1.2"/><path d="M3 8v3c0 1.1 2.24 2 5 2s5-.9 5-2V8" stroke={color} strokeWidth="1.2"/></svg>,
+    ec2: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="8" rx="1.5" stroke={color} strokeWidth="1.2" fill="none"/><circle cx="8" cy="8" r="2" stroke={color} strokeWidth="1.2" fill="none"/><path d="M5 2v2M11 2v2M5 12v2M11 12v2" stroke={color} strokeWidth="1.2" strokeLinecap="round"/></svg>,
+    iam: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="2.5" stroke={color} strokeWidth="1.2" fill="none"/><path d="M3 14c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke={color} strokeWidth="1.2" strokeLinecap="round" fill="none"/></svg>,
+    settings: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke={color} strokeWidth="1.2" fill="none"/><path d="M8 1.5v1.7M8 12.8v1.7M1.5 8h1.7M12.8 8h1.7M3.7 3.7l1.2 1.2M11.1 11.1l1.2 1.2M12.3 3.7l-1.2 1.2M4.9 11.1l-1.2 1.2" stroke={color} strokeWidth="1.2" strokeLinecap="round"/></svg>,
+    info: <svg width={size} height={size} viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke={color} strokeWidth="1.2" fill="none"/><path d="M8 7v5M8 5v.5" stroke={color} strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  };
+  return icons[name] || icons.file;
+};
+
+const getFileIcon = (type) => {
+  const map = { folder: 'folder', py: 'py', json: 'json', md: 'md', csv: 'csv', parquet: 'parquet', pdf: 'pdf', png: 'img', jpg: 'img', svg: 'img', ico: 'img', xlsx: 'csv', yaml: 'json', sh: 'py', txt: 'md' };
+  return map[type] || 'file';
+};
+
+// ─── Context Menu ─────────────────────────────────────────────────────────────
+const ContextMenu = ({ x, y, items, onClose }) => {
+  const ref = useRef();
+  useEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, [onClose]);
+
+  // Clamp to viewport
+  const top = Math.min(y, window.innerHeight - 200);
+  const left = Math.min(x, window.innerWidth - 180);
+
+  return (
+    <div ref={ref} style={{ position: 'fixed', top, left, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 1000, minWidth: 170, padding: '4px 0', fontSize: 13 }}>
+      {items.map((item, i) =>
+        item === '---' ? (
+          <div key={i} style={{ height: 1, background: '#f0f0f0', margin: '3px 0' }} />
+        ) : (
+          <div key={item.label} onClick={() => { item.action(); onClose(); }}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', cursor: 'pointer', color: item.danger ? '#EF4444' : '#1f2937', transition: 'background 0.1s' }}
+            onMouseEnter={e => e.currentTarget.style.background = item.danger ? '#FEF2F2' : '#f3f4f6'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <Icon name={item.icon} size={14} color={item.danger ? '#EF4444' : '#6b7280'} />
+            {item.label}
+          </div>
+        )
+      )}
+    </div>
+  );
+};
+
+// ─── Preview Modal ────────────────────────────────────────────────────────────
+const PreviewModal = ({ file, onClose }) => {
+  const content = FILE_PREVIEW[file.name] || `(No preview available for this file type)`;
+  const lines = content.trim().split('\n').slice(0, 25);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: '#fff', borderRadius: 12, width: 600, maxHeight: '70vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid #f0f0f0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Icon name={getFileIcon(file.type)} size={16} />
+            <span style={{ fontWeight: 600, fontSize: 14, fontFamily: 'IBM Plex Mono' }}>{file.name}</span>
+            <span style={{ fontSize: 12, color: '#9ca3af', background: '#f3f4f6', padding: '2px 7px', borderRadius: 4 }}>top 25 lines</span>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', color: '#9ca3af' }}>
+            <Icon name="close" size={16} color="#9ca3af" />
+          </button>
+        </div>
+        <div style={{ overflow: 'auto', flex: 1, background: '#1e1e2e' }}>
+          <pre style={{ fontFamily: 'IBM Plex Mono', fontSize: 12.5, lineHeight: 1.7, padding: '16px 20px', color: '#cdd6f4', margin: 0 }}>
+            {lines.map((line, i) => (
+              <div key={i} style={{ display: 'flex', gap: 16 }}>
+                <span style={{ color: '#45475a', userSelect: 'none', minWidth: 28, textAlign: 'right' }}>{i + 1}</span>
+                <span>{line}</span>
+              </div>
+            ))}
+          </pre>
+        </div>
+        <div style={{ padding: '10px 18px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', fontSize: 13, cursor: 'pointer', fontFamily: 'IBM Plex Sans' }}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Rename Modal ─────────────────────────────────────────────────────────────
+const RenameModal = ({ file, onConfirm, onClose }) => {
+  const [name, setName] = useState(file.name);
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ background: '#fff', borderRadius: 10, width: 380, boxShadow: '0 16px 48px rgba(0,0,0,0.16)', overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0' }}>
+          <div style={{ fontWeight: 600, fontSize: 14 }}>Rename</div>
+        </div>
+        <div style={{ padding: '16px 20px' }}>
+          <input value={name} onChange={e => setName(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') onConfirm(name); if (e.key === 'Escape') onClose(); }}
+            style={{ width: '100%', padding: '8px 12px', border: '1px solid #e5e7eb', borderRadius: 6, fontSize: 13, fontFamily: 'IBM Plex Mono', outline: 'none' }}
+            autoFocus onFocus={e => e.target.select()} />
+        </div>
+        <div style={{ padding: '12px 20px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', fontSize: 13, cursor: 'pointer' }}>Cancel</button>
+          <button onClick={() => onConfirm(name)} style={{ padding: '6px 14px', borderRadius: 6, border: 'none', background: '#2563EB', color: '#fff', fontSize: 13, cursor: 'pointer', fontWeight: 500 }}>Rename</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+const Toast = ({ message, onDone }) => {
+  useEffect(() => { const t = setTimeout(onDone, 2200); return () => clearTimeout(t); }, []);
+  return (
+    <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: '#1f2937', color: '#fff', padding: '9px 18px', borderRadius: 8, fontSize: 13, zIndex: 3000, boxShadow: '0 4px 16px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+      <span style={{ color: '#34D399' }}>✓</span> {message}
+    </div>
+  );
+};
+
+// ─── File Panel ───────────────────────────────────────────────────────────────
+const FilePanel = ({ panelId, label, otherPanelId, onToast, dragState, setDragState }) => {
+  const [bucket, setBucket] = useState(BUCKETS[panelId === 'top' ? 0 : 1]);
+  const [prefix, setPrefix] = useState('');
+  const [selected, setSelected] = useState(new Set());
+  const [contextMenu, setContextMenu] = useState(null);
+  const [previewFile, setPreviewFile] = useState(null);
+  const [renameFile, setRenameFile] = useState(null);
+  const [files, setFiles] = useState(() => getFiles(BUCKETS[panelId === 'top' ? 0 : 1], ''));
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [showBucketDropdown, setShowBucketDropdown] = useState(false);
+  const listRef = useRef();
+
+  const breadcrumbs = prefix ? ['root', ...prefix.slice(0, -1).split('/')] : ['root'];
+
+  const navigateTo = (b, p) => {
+    setBucket(b);
+    setPrefix(p);
+    setSelected(new Set());
+    setFiles(getFiles(b, p));
+  };
+
+  const openFolder = (folder) => {
+    navigateTo(bucket, prefix + folder.name + '/');
+  };
+
+  const navigateBreadcrumb = (idx) => {
+    if (idx === 0) { navigateTo(bucket, ''); return; }
+    const parts = prefix.split('/').filter(Boolean);
+    navigateTo(bucket, parts.slice(0, idx).join('/') + '/');
+  };
+
+  const toggleSelect = (id, e) => {
+    setSelected(prev => {
+      const next = new Set(e.shiftKey || e.metaKey || e.ctrlKey ? prev : []);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const getSelectedFiles = () => files.filter(f => selected.has(f.id));
+
+  const handleDblClick = (file) => {
+    if (file.type === 'folder') { openFolder(file); return; }
+    setPreviewFile(file);
+  };
+
+  const handleContextMenu = (e, file) => {
+    e.preventDefault();
+    if (!selected.has(file.id)) setSelected(new Set([file.id]));
+    const isFolder = file.type === 'folder';
+    const selFiles = selected.has(file.id) ? files.filter(f => selected.has(f.id)) : [file];
+    const multi = selFiles.length > 1;
+    setContextMenu({
+      x: e.clientX, y: e.clientY,
+      items: [
+        !isFolder && !multi && { label: 'Preview (top 25 lines)', icon: 'preview', action: () => setPreviewFile(file) },
+        { label: multi ? `Copy ${selFiles.length} items here` : 'Copy to other panel', icon: 'copy', action: () => { onToast(`Copied ${multi ? selFiles.length + ' items' : '"' + file.name + '"'}`); } },
+        { label: multi ? `Move ${selFiles.length} items` : 'Move to other panel', icon: 'move', action: () => { setFiles(f => f.filter(x => !selected.has(x.id))); setSelected(new Set()); onToast(`Moved ${multi ? selFiles.length + ' items' : '"' + file.name + '"'}`); } },
+        !multi && { label: 'Rename', icon: 'rename', action: () => setRenameFile(file) },
+        { label: multi ? `Download ${selFiles.length} items` : 'Download', icon: 'download', action: () => onToast(`Downloading ${multi ? selFiles.length + ' files' : '"' + file.name + '"'}...`) },
+        '---',
+        { label: 'Delete', icon: 'delete', danger: true, action: () => { setFiles(f => f.filter(x => !selected.has(x.id))); setSelected(new Set()); onToast('Deleted'); } },
+      ].filter(Boolean),
+    });
+  };
+
+  const handleDragStart = (e, file) => {
+    const dragging = selected.has(file.id) ? files.filter(f => selected.has(f.id)) : [file];
+    setDragState({ files: dragging, from: panelId });
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (dragState && dragState.from !== panelId) {
+      onToast(`Moved ${dragState.files.length} item${dragState.files.length > 1 ? 's' : ''} to ${bucket}/${prefix}`);
+      setDragState(null);
+    }
+  };
+
+  const handleRename = (newName) => {
+    setFiles(f => f.map(x => x.id === renameFile.id ? { ...x, name: newName } : x));
+    onToast(`Renamed to "${newName}"`);
+    setRenameFile(null);
+  };
+
+  const selectedCount = selected.size;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fff', position: 'relative' }}
+      onDragOver={e => { e.preventDefault(); if (dragState?.from !== panelId) setIsDragOver(true); }}
+      onDragLeave={() => setIsDragOver(false)}
+      onDrop={handleDrop}>
+
+      {/* Drop overlay */}
+      {isDragOver && (
+        <div style={{ position: 'absolute', inset: 0, background: 'rgba(37,99,235,0.08)', border: '2px dashed #2563EB', borderRadius: 6, zIndex: 10, pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ color: '#2563EB', fontWeight: 500, fontSize: 14 }}>Drop to move here</span>
+        </div>
+      )}
+
+      {/* Panel header */}
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', gap: 8, background: '#fafafa' }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 32 }}>{label}</span>
+
+        {/* Bucket selector */}
+        <div style={{ position: 'relative' }}>
+          <button onClick={() => setShowBucketDropdown(v => !v)}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', cursor: 'pointer', fontSize: 12.5, fontFamily: 'IBM Plex Mono', fontWeight: 500, color: '#374151' }}>
+            <Icon name="s3" size={12} color="#F59E0B" />
+            {bucket}
+            <Icon name="chevronDown" size={11} color="#9ca3af" />
+          </button>
+          {showBucketDropdown && (
+            <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 100, minWidth: 200, padding: '4px 0' }}>
+              {BUCKETS.map(b => (
+                <div key={b} onClick={() => { setBucket(b); setPrefix(''); setFiles(getFiles(b, '')); setShowBucketDropdown(false); setSelected(new Set()); }}
+                  style={{ padding: '7px 12px', cursor: 'pointer', fontSize: 12.5, fontFamily: 'IBM Plex Mono', color: b === bucket ? '#2563EB' : '#374151', background: b === bucket ? '#EFF6FF' : 'transparent', display: 'flex', alignItems: 'center', gap: 7 }}
+                  onMouseEnter={e => { if (b !== bucket) e.currentTarget.style.background = '#f9fafb'; }}
+                  onMouseLeave={e => { if (b !== bucket) e.currentTarget.style.background = 'transparent'; }}>
+                  <Icon name="s3" size={11} color={b === bucket ? '#2563EB' : '#9ca3af'} />
+                  {b}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Breadcrumb */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, overflow: 'hidden' }}>
+          {breadcrumbs.map((crumb, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <Icon name="chevronRight" size={12} color="#d1d5db" />}
+              <button onClick={() => navigateBreadcrumb(i)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: i === breadcrumbs.length - 1 ? '#374151' : '#6b7280', fontFamily: 'IBM Plex Mono', padding: '2px 4px', borderRadius: 3 }}
+                onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
+                onMouseLeave={e => e.currentTarget.style.background = 'none'}>
+                {crumb}
+              </button>
+            </React.Fragment>
+          ))}
+        </div>
+
+        {selectedCount > 0 && (
+          <span style={{ fontSize: 11.5, color: '#2563EB', fontWeight: 500 }}>{selectedCount} selected</span>
+        )}
+
+        <button onClick={() => { setFiles(getFiles(bucket, prefix)); setSelected(new Set()); onToast('Refreshed'); }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', color: '#9ca3af' }}
+          title="Refresh">
+          <Icon name="refresh" size={14} color="#9ca3af" />
+        </button>
+      </div>
+
+      {/* Column headers */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px', gap: 0, padding: '5px 12px', borderBottom: '1px solid #f0f2f5', background: '#fafafa' }}>
+        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Name</span>
+        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Size</span>
+        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Modified</span>
+      </div>
+
+      {/* File list */}
+      <div ref={listRef} style={{ flex: 1, overflow: 'auto' }} onClick={() => setSelected(new Set())}>
+        {/* Back row */}
+        {prefix && (
+          <div onClick={e => { e.stopPropagation(); navigateBreadcrumb(breadcrumbs.length - 2); }}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px', padding: '7px 12px', cursor: 'pointer', borderBottom: '1px solid #f9fafb' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: '#6b7280', fontFamily: 'IBM Plex Mono' }}>
+              <span style={{ fontSize: 14 }}>←</span> ..
+            </span>
+          </div>
+        )}
+
+        {files.map((file) => {
+          const isSelected = selected.has(file.id);
+          return (
+            <div key={file.id}
+              draggable
+              onDragStart={e => handleDragStart(e, file)}
+              onClick={e => { e.stopPropagation(); toggleSelect(file.id, e); }}
+              onDoubleClick={() => handleDblClick(file)}
+              onContextMenu={e => handleContextMenu(e, file)}
+              style={{ display: 'grid', gridTemplateColumns: '1fr 80px 100px', padding: '7px 12px', cursor: 'default', borderBottom: '1px solid #f9fafb', background: isSelected ? '#EFF6FF' : 'transparent', userSelect: 'none', transition: 'background 0.08s' }}
+              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f9fafb'; }}
+              onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontFamily: 'IBM Plex Mono', color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <Icon name={getFileIcon(file.type)} size={15} color={file.type === 'folder' ? '#F59E0B' : '#6b7280'} />
+                {file.name}
+              </span>
+              <span style={{ fontSize: 12, color: '#9ca3af', textAlign: 'right', fontFamily: 'IBM Plex Mono' }}>{file.size}</span>
+              <span style={{ fontSize: 12, color: '#9ca3af', textAlign: 'right', fontFamily: 'IBM Plex Mono' }}>{file.modified}</span>
+            </div>
+          );
+        })}
+
+        {files.length === 0 && (
+          <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>No files in this location</div>
+        )}
+      </div>
+
+      {contextMenu && <ContextMenu x={contextMenu.x} y={contextMenu.y} items={contextMenu.items} onClose={() => setContextMenu(null)} />}
+      {previewFile && <PreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
+      {renameFile && <RenameModal file={renameFile} onConfirm={handleRename} onClose={() => setRenameFile(null)} />}
+    </div>
+  );
+};
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+const NAV_ITEMS = [
+  { id: 's3', icon: 's3', label: 'S3', active: true },
+  { id: 'lambda', icon: 'lambda', label: 'Lambda' },
+  { id: 'dynamo', icon: 'dynamo', label: 'DynamoDB' },
+  { id: 'ec2', icon: 'ec2', label: 'EC2' },
+  { id: 'iam', icon: 'iam', label: 'IAM' },
+];
+
+const Sidebar = ({ active, onSelect }) => (
+  <div style={{ width: 52, background: '#1e2130', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 0', gap: 2, flexShrink: 0 }}>
+    {/* Logo mark */}
+    <div style={{ width: 32, height: 32, borderRadius: 8, background: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2L16 6v6L9 16 2 12V6L9 2z" fill="white" fillOpacity="0.9"/><path d="M9 2v6.5M2 6l7 2.5 7-2.5M9 8.5V16" stroke="#F59E0B" strokeWidth="1.2"/></svg>
+    </div>
+
+    {NAV_ITEMS.map(item => (
+      <div key={item.id} onClick={() => onSelect(item.id)}
+        title={item.label}
+        style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: active === item.id ? 'rgba(245,158,11,0.15)' : 'transparent', color: active === item.id ? '#F59E0B' : '#6b7280', transition: 'all 0.15s', position: 'relative' }}
+        onMouseEnter={e => { if (active !== item.id) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#d1d5db'; }}
+        onMouseLeave={e => { if (active !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280'; } }}>
+        <Icon name={item.icon} size={17} color="currentColor" />
+      </div>
+    ))}
+
+    <div style={{ flex: 1 }} />
+    <div style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6b7280' }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#d1d5db'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280'; }}>
+      <Icon name="settings" size={17} color="currentColor" />
+    </div>
+  </div>
+);
+
+// ─── Divider ──────────────────────────────────────────────────────────────────
+const Divider = ({ onResize }) => {
+  const isDragging = useRef(false);
+  const onMouseDown = (e) => {
+    e.preventDefault();
+    isDragging.current = true;
+    const onMove = (ev) => { if (isDragging.current) onResize(ev.clientY); };
+    const onUp = () => { isDragging.current = false; };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp, { once: true });
+  };
+  return (
+    <div onMouseDown={onMouseDown}
+      style={{ height: 5, background: '#f0f2f5', cursor: 'row-resize', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}
+      onMouseEnter={e => e.currentTarget.style.background = '#e5e7eb'}
+      onMouseLeave={e => e.currentTarget.style.background = '#f0f2f5'}>
+      <div style={{ width: 32, height: 2, borderRadius: 2, background: '#d1d5db' }} />
+    </div>
+  );
+};
+
+// ─── Toolbar strip between panels ─────────────────────────────────────────────
+const ActionBar = ({ onCopy, onMove, onSwap }) => (
+  <div style={{ height: 34, background: '#f8f9fa', borderTop: '1px solid #f0f2f5', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', gap: 4, padding: '0 12px', flexShrink: 0 }}>
+    <span style={{ fontSize: 11, color: '#9ca3af', marginRight: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</span>
+    {[
+      { label: 'Copy ↓', icon: 'copy', action: onCopy },
+      { label: 'Move ↓', icon: 'move', action: onMove },
+      { label: 'Swap', icon: 'refresh', action: onSwap },
+    ].map(btn => (
+      <button key={btn.label} onClick={btn.action}
+        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid #e5e7eb', borderRadius: 5, background: '#fff', fontSize: 12, cursor: 'pointer', color: '#374151', fontFamily: 'IBM Plex Sans', transition: 'all 0.1s' }}
+        onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.borderColor = '#d1d5db'; }}
+        onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#e5e7eb'; }}>
+        <Icon name={btn.icon} size={13} color="#6b7280" />
+        {btn.label}
+      </button>
+    ))}
+    <div style={{ flex: 1 }} />
+    <span style={{ fontSize: 11, color: '#b0b7c3', fontFamily: 'IBM Plex Mono' }}>s3://  ↑ drag & drop ↓  s3://</span>
+  </div>
+);
+
+// ─── Main App ─────────────────────────────────────────────────────────────────
+const App = () => {
+  const [toast, setToast] = useState(null);
+  const [activeNav, setActiveNav] = useState('s3');
+  const [topH, setTopH] = useState(null); // null = 50%
+  const [dragState, setDragState] = useState(null);
+  const containerRef = useRef();
+
+  const onToast = (msg) => setToast(msg);
+
+  const handleDividerResize = useCallback((clientY) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const frac = (clientY - rect.top) / rect.height;
+    setTopH(Math.max(0.2, Math.min(0.8, frac)) * 100);
+  }, []);
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+      <Sidebar active={activeNav} onSelect={setActiveNav} />
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Top bar */}
+        <div style={{ height: 42, background: '#fff', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0 }}>
+          <span style={{ fontWeight: 600, fontSize: 14, color: '#1f2937' }}>S3 File Manager</span>
+          <span style={{ fontSize: 12, color: '#9ca3af' }}>boto3 / s3</span>
+          <div style={{ flex: 1 }} />
+          <span style={{ fontSize: 11.5, color: '#9ca3af', fontFamily: 'IBM Plex Mono' }}>us-east-1</span>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34D399' }} title="Connected" />
+        </div>
+
+        {/* Panels */}
+        <div ref={containerRef} style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div style={{ height: topH ? `${topH}%` : '50%', overflow: 'hidden' }}>
+            <FilePanel panelId="top" label="Top" onToast={onToast} dragState={dragState} setDragState={setDragState} />
+          </div>
+
+          <ActionBar
+            onCopy={() => onToast('Copied selected items to bottom panel')}
+            onMove={() => onToast('Moved selected items to bottom panel')}
+            onSwap={() => onToast('Swapped panel locations')}
+          />
+
+          <Divider onResize={handleDividerResize} />
+
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <FilePanel panelId="bottom" label="Bot" onToast={onToast} dragState={dragState} setDragState={setDragState} />
+          </div>
+        </div>
+      </div>
+
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

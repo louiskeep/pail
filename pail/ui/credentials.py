@@ -1,0 +1,65 @@
+# core/credentials.py
+
+"""
+AWS Credentials management
+Handles loading and saving of AWS credentials from files
+Refactored to remove Matillion functionality - S3 Crawler pure focus
+"""
+import os
+import logging
+from pathlib import Path
+
+# Setup logging
+logger = logging.getLogger(__name__)
+
+def load_credentials_from_file():
+    """Load AWS credentials from aws_credentials.txt
+    
+    Returns:
+        dict: Dictionary with AWS credentials
+    """
+    creds = {
+        'access_key': '',
+        'secret_key': '',
+        'session_token': '',
+        'region': ''
+    }
+    
+    try:
+        with open('aws_credentials.txt', 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith('AWS_ACCESS_KEY_ID='):
+                    creds['access_key'] = line.split('=', 1)[1]
+                elif line.startswith('AWS_SECRET_ACCESS_KEY='):
+                    creds['secret_key'] = line.split('=', 1)[1]
+                elif line.startswith('AWS_SESSION_TOKEN='):
+                    creds['session_token'] = line.split('=', 1)[1]
+                elif line.startswith('AWS_REGION='):
+                    creds['region'] = line.split('=', 1)[1]
+    except FileNotFoundError:
+        logger.warning("AWS credentials file not found")
+    except Exception as e:
+        logger.error(f"Error loading AWS credentials: {str(e)}")
+    
+    return creds
+
+def save_credentials_to_file(creds):
+    """Save AWS credentials to file
+    
+    Args:
+        creds (dict): Dictionary with AWS credentials
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        with open('aws_credentials.txt', 'w') as f:
+            f.write(f"AWS_ACCESS_KEY_ID={creds.get('access_key', '')}\n")
+            f.write(f"AWS_SECRET_ACCESS_KEY={creds.get('secret_key', '')}\n")
+            f.write(f"AWS_SESSION_TOKEN={creds.get('session_token', '')}\n")
+            f.write(f"AWS_REGION={creds.get('region', '')}\n")
+        return True
+    except Exception as e:
+        logger.error(f"Error saving AWS credentials: {str(e)}")
+        return False

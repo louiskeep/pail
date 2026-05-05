@@ -1,0 +1,18 @@
+<!-- Right-side progress panel for multi-file operation with slide tab -->
+<div id="multiFileOperationPanelTab" class="multi-file-panel-tab">&#x25C0;</div>
+<div id="multiFileOperationModal" class="multi-file-progress-panel multi-file-panel-closed">
+  <div class="multi-file-progress-content">
+    <div class="multi-file-progress-header">
+      <span id="multiFileOperationTitle">File Operation Progress</span>
+      <span class="close" id="closeMultiFileModal">&times;</span>
+    </div>
+    <div id="multiFileOperationList" class="multi-file-operation-list">
+      <!-- File progress rows will be injected here -->
+    </div>
+    <div id="multiFileOverallProgressContainer" class="multi-file-overall-progress">
+      <label>Overall Progress:</label>
+      <progress id="multiFileOverallProgress" value="0" max="100"></progress>
+    </div>
+    <button id="cancelMultiFileOperation" class="multi-file-cancel-btn">Cancel</button>
+  </div>
+</div>

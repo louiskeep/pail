@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S3 Bucket Explorer</title>
+    <link rel="stylesheet" href="/static/main.css">
+    <link rel="stylesheet" href="/static/explorer.css">
+</head>
+<body>
+    <div class="header-box">
+        <h1>Salamand3r</h1>
+        <h2>S3 Explorer</h2>
+    </div>
+    <div class="explorer-pane-wrapper" style="display: flex; flex-direction: column; align-items: stretch; gap: 20px;">
+        <div class="explorer-pane" id="explorer-pane-1" style="height: 400px; overflow:hidden;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <label for="bucket-select-1">Select a bucket:</label>
+                <select id="bucket-select-1">
+                    <option>Loading...</option>
+                </select>
+            </div>
+            <div id="prefix-path-1" class="prefix-path" style="margin: 0 0 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+        </div>
+        <div id="error-message-1" style="color:red;"></div>
+            <input type="text" id="search-input-1" class="explorer-search" placeholder="Search files/folders..." autocomplete="off" />
+            <div class="explorer-table-scroll">
+                <table class="explorer-table" id="explorer-table-1">
+                    <thead>
+                        <tr>
+                            <th id="sort-name-1" class="sortable">Name</th>
+                            <th>Type</th>
+                            <th id="sort-size-1" class="sortable">Size</th>
+                            <th id="sort-modified-1" class="sortable">Last Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Contents will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="explorer-pane" id="explorer-pane-2" style="height: 400px; overflow:hidden;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <label for="bucket-select-2">Select a bucket:</label>
+                <select id="bucket-select-2">
+                    <option>Loading...</option>
+                </select>
+            </div>
+            <div id="prefix-path-2" class="prefix-path" style="margin: 0 0 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></div>
+        </div>
+        <div id="error-message-2" style="color:red;"></div>
+            <input type="text" id="search-input-2" class="explorer-search" placeholder="Search files/folders..." autocomplete="off" />
+            <div class="explorer-table-scroll">
+                <table class="explorer-table" id="explorer-table-2">
+                    <thead>
+                        <tr>
+                            <th id="sort-name-2" class="sortable">Name</th>
+                            <th>Type</th>
+                            <th id="sort-size-2" class="sortable">Size</th>
+                            <th id="sort-modified-2" class="sortable">Last Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Contents will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Multi-file operation modal -->
+    {% include 'multi_file_operation_modal.html' %}
+    <link rel="stylesheet" href="/static/multi_file_operation.css">
+    <script src="/static/main.js"></script>
+    <script src="/static/multi_file_operation.js"></script>
+</body>
+
+</html>

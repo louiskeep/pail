@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - S3 Crawler Web</title>
+    <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-dialog">
+            <h2>S3 Crawler Web Login</h2>
+            <form id="login-form" style="width:100%;">
+                <label for="access-key">AWS Access Key ID:</label>
+                <input type="text" id="access-key" name="access-key" required><br>
+                <label for="secret-key">AWS Secret Access Key:</label>
+                <input type="password" id="secret-key" name="secret-key" required><br>
+                <label for="session-token">AWS Session Token:</label>
+                <input type="text" id="session-token" name="session-token"><br>
+                <label for="region">Region:</label>
+                <input type="text" id="region" value="us-east-1" required>
+                <button type="submit">Login</button>
+            </form>
+            <div id="login-error" style="color:red;"></div>
+        </div>
+    </div>
+    <script src="/static/login.js"></script>
+</body>
+</html>

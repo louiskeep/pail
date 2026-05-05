@@ -1,0 +1,15 @@
+<!-- Modal for multi-file operation progress -->
+<div id="multiFileOperationModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <span class="close" id="closeMultiFileModal">&times;</span>
+    <h2 id="multiFileOperationTitle">File Operation Progress</h2>
+    <div id="multiFileOperationList">
+      <!-- File progress rows will be injected here -->
+    </div>
+    <div id="multiFileOverallProgressContainer" style="margin-top: 16px;">
+      <label>Overall Progress:</label>
+      <progress id="multiFileOverallProgress" value="0" max="100" style="width: 100%;"></progress>
+    </div>
+    <button id="cancelMultiFileOperation" style="margin-top: 16px;">Cancel</button>
+  </div>
+</div>
