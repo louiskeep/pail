@@ -138,7 +138,9 @@ const toRow = (obj) => {
     name,
     type: isFolder ? 'folder' : extOf(name),
     size: isFolder ? '—' : formatSize(obj.Size),
+    rawSize: isFolder ? -1 : (obj.Size || 0),
     modified: formatDate(obj.LastModified),
+    rawModified: obj.LastModified || '',
     isFolder,
     selected: false,
   };
@@ -275,9 +277,38 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
   const [previewFile, setPreviewFile] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [showBucketDropdown, setShowBucketDropdown] = useState(false);
+  const [query, setQuery] = useState('');
+  const [sortKey, setSortKey] = useState('name'); // 'name' | 'size' | 'modified'
+  const [sortDir, setSortDir] = useState('asc'); // 'asc' | 'desc'
   const listRef = useRef();
 
   const breadcrumbs = prefix ? ['root', ...prefix.slice(0, -1).split('/')] : ['root'];
+
+  const displayedFiles = (() => {
+    const q = query.trim().toLowerCase();
+    let out = q ? files.filter(f => f.name.toLowerCase().includes(q)) : files.slice();
+    const dir = sortDir === 'asc' ? 1 : -1;
+    out.sort((a, b) => {
+      // Folders always come first
+      if (a.isFolder !== b.isFolder) return a.isFolder ? -1 : 1;
+      let cmp;
+      if (sortKey === 'size') cmp = (a.rawSize || 0) - (b.rawSize || 0);
+      else if (sortKey === 'modified') cmp = String(a.rawModified || '').localeCompare(String(b.rawModified || ''));
+      else cmp = a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+      return cmp * dir;
+    });
+    return out;
+  })();
+
+  const toggleSort = (key) => {
+    if (sortKey === key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'modified' ? 'desc' : 'asc');
+    }
+  };
+  const sortIndicator = (key) => sortKey === key ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
 
   const reload = useCallback(async (b = bucket, p = prefix) => {
     if (!b) return;
@@ -448,6 +479,22 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
           <span style={{ fontSize: 11.5, color: '#2563EB', fontWeight: 500 }}>{selectedCount} selected</span>
         )}
 
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Filter files…"
+            style={{ padding: '4px 22px 4px 8px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--panel)', color: 'var(--text)', fontSize: 12, fontFamily: 'IBM Plex Mono', width: 160, outline: 'none' }} />
+          {query && (
+            <button onClick={() => setQuery('')}
+              title="Clear filter"
+              style={{ position: 'absolute', right: 2, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: 'var(--text-4)', display: 'flex' }}>
+              <Icon name="close" size={12} />
+            </button>
+          )}
+        </div>
+
         <button onClick={() => reload()}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', color: 'var(--text-4)' }}
           title="Refresh">
@@ -456,9 +503,15 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', gap: 0, padding: '5px 12px', borderBottom: '1px solid var(--bg)', background: 'var(--panel-2)' }}>
-        <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Name</span>
-        <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Size</span>
-        <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Modified</span>
+        <span onClick={() => toggleSort('name')}
+          style={{ fontSize: 11, color: sortKey === 'name' ? 'var(--text-2)' : 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', cursor: 'pointer', userSelect: 'none' }}
+          title="Sort by name">Name{sortIndicator('name')}</span>
+        <span onClick={() => toggleSort('size')}
+          style={{ fontSize: 11, color: sortKey === 'size' ? 'var(--text-2)' : 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', cursor: 'pointer', userSelect: 'none' }}
+          title="Sort by size">Size{sortIndicator('size')}</span>
+        <span onClick={() => toggleSort('modified')}
+          style={{ fontSize: 11, color: sortKey === 'modified' ? 'var(--text-2)' : 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', cursor: 'pointer', userSelect: 'none' }}
+          title="Sort by modified date">Modified{sortIndicator('modified')}</span>
       </div>
 
       <div ref={listRef} style={{ flex: 1, overflow: 'auto' }} onClick={() => setSelected(new Set())}>
@@ -477,7 +530,7 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
           <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-4)', fontSize: 13 }}>Loading…</div>
         )}
 
-        {!loading && files.map((file) => {
+        {!loading && displayedFiles.map((file) => {
           const isSelected = selected.has(file.id);
           return (
             <div key={file.id}
@@ -499,8 +552,10 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
           );
         })}
 
-        {!loading && files.length === 0 && (
-          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-4)', fontSize: 13 }}>No files in this location</div>
+        {!loading && displayedFiles.length === 0 && (
+          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-4)', fontSize: 13 }}>
+            {files.length === 0 ? 'No files in this location' : `No files match "${query}"`}
+          </div>
         )}
       </div>
 
