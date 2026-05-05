@@ -4,18 +4,46 @@
     <meta charset="UTF-8">
     <title>Login - S3 Crawler Web</title>
     <link rel="stylesheet" href="/static/main.css">
+    <style>
+        .auth-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+        .auth-tab { flex: 1; padding: 6px 10px; background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; font-size: 13px; text-align: center; }
+        .auth-tab.active { background: #2563EB; color: #fff; border-color: #2563EB; }
+        .auth-pane { display: none; }
+        .auth-pane.active { display: block; }
+        .muted { color: #6b7280; font-size: 12px; margin: 6px 0 10px; }
+    </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-dialog">
             <h2>S3 Crawler Web Login</h2>
+
+            <div class="auth-tabs">
+                <div class="auth-tab" data-mode="default" id="tab-default">Default chain</div>
+                <div class="auth-tab" data-mode="profile" id="tab-profile">Profile</div>
+                <div class="auth-tab active" data-mode="keys" id="tab-keys">Keys</div>
+            </div>
+
             <form id="login-form" style="width:100%;">
-                <label for="access-key">AWS Access Key ID:</label>
-                <input type="text" id="access-key" name="access-key" required><br>
-                <label for="secret-key">AWS Secret Access Key:</label>
-                <input type="password" id="secret-key" name="secret-key" required><br>
-                <label for="session-token">AWS Session Token:</label>
-                <input type="text" id="session-token" name="session-token"><br>
+                <div class="auth-pane" id="pane-default">
+                    <div class="muted" id="default-status">Checking your environment…</div>
+                </div>
+
+                <div class="auth-pane" id="pane-profile">
+                    <label for="profile-select">AWS profile:</label>
+                    <select id="profile-select"><option>Loading…</option></select>
+                    <div class="muted">Reads from <code>~/.aws/credentials</code> and <code>~/.aws/config</code>. SSO profiles auto-refresh.</div>
+                </div>
+
+                <div class="auth-pane active" id="pane-keys">
+                    <label for="access-key">AWS Access Key ID:</label>
+                    <input type="text" id="access-key" name="access-key"><br>
+                    <label for="secret-key">AWS Secret Access Key:</label>
+                    <input type="password" id="secret-key" name="secret-key"><br>
+                    <label for="session-token">AWS Session Token:</label>
+                    <input type="text" id="session-token" name="session-token"><br>
+                </div>
+
                 <label for="region">Region:</label>
                 <input type="text" id="region" value="us-east-1" required>
                 <button type="submit">Login</button>

@@ -138,6 +138,29 @@ class S3Manager:
             return False, None
     
     @classmethod
+    def connect_with_session(cls, boto3_session, region: str = None) -> bool:
+        """Connect using a pre-built boto3 Session (e.g. from a named profile or
+        the default credential chain). Lets boto3 manage credential refresh."""
+        if not region:
+            region = boto3_session.region_name or "us-east-1"
+        with cls._lock:
+            try:
+                if boto3_session.get_credentials() is None:
+                    cls._connected = False
+                    return False
+                cls._s3_client = boto3_session.client('s3', region_name=region)
+                cls._s3_resource = boto3_session.resource('s3', region_name=region)
+                cls._region = region
+                cls._credentials = None
+                cls._s3_client.list_buckets()
+                cls._connected = True
+                return True
+            except Exception as e:
+                logger.error(f"connect_with_session failed: {e}")
+                cls._connected = False
+                return False
+
+    @classmethod
     def disconnect(cls) -> None:
         """Disconnect from AWS S3"""
         with cls._lock:
