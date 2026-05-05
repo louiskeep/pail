@@ -11,9 +11,45 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
 <style>
+  :root {
+    --bg: #f0f2f5;
+    --panel: #ffffff;
+    --panel-2: #fafafa;
+    --action-bg: #f8f9fa;
+    --hover: #f9fafb;
+    --selected: #EFF6FF;
+    --chip: #f3f4f6;
+    --border: #e5e7eb;
+    --border-subtle: #f0f0f0;
+    --divider: #d1d5db;
+    --text: #1f2937;
+    --text-2: #374151;
+    --text-3: #6b7280;
+    --text-4: #9ca3af;
+    --text-5: #b0b7c3;
+    color-scheme: light;
+  }
+  [data-theme="dark"] {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1a2030;
+    --action-bg: #131822;
+    --hover: #1e2533;
+    --selected: #1e3a5f;
+    --chip: #232a36;
+    --border: #2d3441;
+    --border-subtle: #1f2531;
+    --divider: #3a4150;
+    --text: #e6edf3;
+    --text-2: #d1d5db;
+    --text-3: #9ca3af;
+    --text-4: #6b7280;
+    --text-5: #4b5563;
+    color-scheme: dark;
+  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body, #root { height: 100%; width: 100%; overflow: hidden; }
-  body { font-family: 'IBM Plex Sans', sans-serif; background: #f0f2f5; }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); }
 </style>
 </head>
 <body>
@@ -158,16 +194,16 @@ const ContextMenu = ({ x, y, items, onClose }) => {
   const left = Math.min(x, window.innerWidth - 180);
 
   return (
-    <div ref={ref} style={{ position: 'fixed', top, left, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 1000, minWidth: 170, padding: '4px 0', fontSize: 13 }}>
+    <div ref={ref} style={{ position: 'fixed', top, left, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 1000, minWidth: 170, padding: '4px 0', fontSize: 13 }}>
       {items.map((item, i) =>
         item === '---' ? (
-          <div key={i} style={{ height: 1, background: '#f0f0f0', margin: '3px 0' }} />
+          <div key={i} style={{ height: 1, background: 'var(--border-subtle)', margin: '3px 0' }} />
         ) : (
           <div key={item.label} onClick={() => { item.action(); onClose(); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', cursor: 'pointer', color: item.danger ? '#EF4444' : '#1f2937', transition: 'background 0.1s' }}
-            onMouseEnter={e => e.currentTarget.style.background = item.danger ? '#FEF2F2' : '#f3f4f6'}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', cursor: 'pointer', color: item.danger ? '#EF4444' : 'var(--text)', transition: 'background 0.1s' }}
+            onMouseEnter={e => e.currentTarget.style.background = item.danger ? '#FEF2F2' : 'var(--chip)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-            <Icon name={item.icon} size={14} color={item.danger ? '#EF4444' : '#6b7280'} />
+            <Icon name={item.icon} size={14} color={item.danger ? '#EF4444' : 'var(--text-3)'} />
             {item.label}
           </div>
         )
@@ -191,15 +227,15 @@ const PreviewModal = ({ bucket, file, onClose }) => {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: '#fff', borderRadius: 12, width: 600, maxHeight: '70vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid #f0f0f0' }}>
+      <div style={{ background: 'var(--panel)', borderRadius: 12, width: 600, maxHeight: '70vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Icon name={getFileIcon(file.type)} size={16} />
             <span style={{ fontWeight: 600, fontSize: 14, fontFamily: 'IBM Plex Mono' }}>{file.name}</span>
-            <span style={{ fontSize: 12, color: '#9ca3af', background: '#f3f4f6', padding: '2px 7px', borderRadius: 4 }}>top 25 lines</span>
+            <span style={{ fontSize: 12, color: 'var(--text-4)', background: 'var(--chip)', padding: '2px 7px', borderRadius: 4 }}>top 25 lines</span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', color: '#9ca3af' }}>
-            <Icon name="close" size={16} color="#9ca3af" />
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', color: 'var(--text-4)' }}>
+            <Icon name="close" size={16} />
           </button>
         </div>
         <div style={{ overflow: 'auto', flex: 1, background: '#1e1e2e' }}>
@@ -212,8 +248,8 @@ const PreviewModal = ({ bucket, file, onClose }) => {
             ))}
           </pre>
         </div>
-        <div style={{ padding: '10px 18px', borderTop: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <button onClick={onClose} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid #e5e7eb', background: '#fff', fontSize: 13, cursor: 'pointer', fontFamily: 'IBM Plex Sans' }}>Close</button>
+        <div style={{ padding: '10px 18px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <button onClick={onClose} style={{ padding: '6px 14px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--panel)', fontSize: 13, cursor: 'pointer', fontFamily: 'IBM Plex Sans' }}>Close</button>
         </div>
       </div>
     </div>
@@ -225,7 +261,7 @@ const Toast = ({ message, kind, onDone }) => {
   useEffect(() => { const t = setTimeout(onDone, 2600); return () => clearTimeout(t); }, []);
   const isErr = kind === 'error';
   return (
-    <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: isErr ? '#7f1d1d' : '#1f2937', color: '#fff', padding: '9px 18px', borderRadius: 8, fontSize: 13, zIndex: 3000, boxShadow: '0 4px 16px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', background: isErr ? '#7f1d1d' : '#111827', color: '#ffffff', padding: '9px 18px', borderRadius: 8, fontSize: 13, zIndex: 3000, boxShadow: '0 4px 16px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', gap: 8 }}>
       <span style={{ color: isErr ? '#fca5a5' : '#34D399' }}>{isErr ? '✕' : '✓'}</span> {message}
     </div>
   );
@@ -357,7 +393,7 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
   const selectedCount = selected.size;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fff', position: 'relative' }}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--panel)', position: 'relative' }}
       onDragOver={e => { e.preventDefault(); if (dragState && dragState.fromPanel !== panelId) setIsDragOver(true); }}
       onDragLeave={() => setIsDragOver(false)}
       onDrop={handleDrop}>
@@ -368,25 +404,25 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
         </div>
       )}
 
-      <div style={{ padding: '8px 12px', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', gap: 8, background: '#fafafa' }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 32 }}>{label}</span>
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--bg)', display: 'flex', alignItems: 'center', gap: 8, background: 'var(--panel-2)' }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', minWidth: 32 }}>{label}</span>
 
         <div style={{ position: 'relative' }}>
           <button onClick={() => setShowBucketDropdown(v => !v)}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', cursor: 'pointer', fontSize: 12.5, fontFamily: 'IBM Plex Mono', fontWeight: 500, color: '#374151' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 8px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--panel)', cursor: 'pointer', fontSize: 12.5, fontFamily: 'IBM Plex Mono', fontWeight: 500, color: 'var(--text-2)' }}>
             <Icon name="s3" size={12} color="#F59E0B" />
             {bucket || '(no bucket)'}
-            <Icon name="chevronDown" size={11} color="#9ca3af" />
+            <Icon name="chevronDown" size={11} />
           </button>
           {showBucketDropdown && (
-            <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 100, minWidth: 200, padding: '4px 0', maxHeight: 320, overflow: 'auto' }}>
-              {buckets.length === 0 && <div style={{ padding: '8px 12px', color: '#9ca3af', fontSize: 12 }}>No buckets</div>}
+            <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 8, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 100, minWidth: 200, padding: '4px 0', maxHeight: 320, overflow: 'auto' }}>
+              {buckets.length === 0 && <div style={{ padding: '8px 12px', color: 'var(--text-4)', fontSize: 12 }}>No buckets</div>}
               {buckets.map(b => (
                 <div key={b} onClick={() => { setShowBucketDropdown(false); reload(b, ''); }}
-                  style={{ padding: '7px 12px', cursor: 'pointer', fontSize: 12.5, fontFamily: 'IBM Plex Mono', color: b === bucket ? '#2563EB' : '#374151', background: b === bucket ? '#EFF6FF' : 'transparent', display: 'flex', alignItems: 'center', gap: 7 }}
-                  onMouseEnter={e => { if (b !== bucket) e.currentTarget.style.background = '#f9fafb'; }}
+                  style={{ padding: '7px 12px', cursor: 'pointer', fontSize: 12.5, fontFamily: 'IBM Plex Mono', color: b === bucket ? '#2563EB' : 'var(--text-2)', background: b === bucket ? 'var(--selected)' : 'transparent', display: 'flex', alignItems: 'center', gap: 7 }}
+                  onMouseEnter={e => { if (b !== bucket) e.currentTarget.style.background = 'var(--hover)'; }}
                   onMouseLeave={e => { if (b !== bucket) e.currentTarget.style.background = 'transparent'; }}>
-                  <Icon name="s3" size={11} color={b === bucket ? '#2563EB' : '#9ca3af'} />
+                  <Icon name="s3" size={11} color={b === bucket ? '#2563EB' : 'var(--text-4)'} />
                   {b}
                 </div>
               ))}
@@ -397,10 +433,10 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
         <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, overflow: 'hidden' }}>
           {breadcrumbs.map((crumb, i) => (
             <React.Fragment key={i}>
-              {i > 0 && <Icon name="chevronRight" size={12} color="#d1d5db" />}
+              {i > 0 && <Icon name="chevronRight" size={12} color="var(--divider)" />}
               <button onClick={() => navigateBreadcrumb(i)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: i === breadcrumbs.length - 1 ? '#374151' : '#6b7280', fontFamily: 'IBM Plex Mono', padding: '2px 4px', borderRadius: 3 }}
-                onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: i === breadcrumbs.length - 1 ? 'var(--text-2)' : 'var(--text-3)', fontFamily: 'IBM Plex Mono', padding: '2px 4px', borderRadius: 3 }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--chip)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'none'}>
                 {crumb}
               </button>
@@ -413,32 +449,32 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
         )}
 
         <button onClick={() => reload()}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', color: '#9ca3af' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', color: 'var(--text-4)' }}
           title="Refresh">
-          <Icon name="refresh" size={14} color="#9ca3af" />
+          <Icon name="refresh" size={14} />
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', gap: 0, padding: '5px 12px', borderBottom: '1px solid #f0f2f5', background: '#fafafa' }}>
-        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Name</span>
-        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Size</span>
-        <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Modified</span>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', gap: 0, padding: '5px 12px', borderBottom: '1px solid var(--bg)', background: 'var(--panel-2)' }}>
+        <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Name</span>
+        <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Size</span>
+        <span style={{ fontSize: 11, color: 'var(--text-4)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Modified</span>
       </div>
 
       <div ref={listRef} style={{ flex: 1, overflow: 'auto' }} onClick={() => setSelected(new Set())}>
         {prefix && (
           <div onClick={e => { e.stopPropagation(); navigateBreadcrumb(breadcrumbs.length - 2); }}
-            style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', padding: '7px 12px', cursor: 'pointer', borderBottom: '1px solid #f9fafb' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', padding: '7px 12px', cursor: 'pointer', borderBottom: '1px solid var(--hover)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: '#6b7280', fontFamily: 'IBM Plex Mono' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, color: 'var(--text-3)', fontFamily: 'IBM Plex Mono' }}>
               <span style={{ fontSize: 14 }}>←</span> ..
             </span>
           </div>
         )}
 
         {loading && (
-          <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>Loading…</div>
+          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-4)', fontSize: 13 }}>Loading…</div>
         )}
 
         {!loading && files.map((file) => {
@@ -450,21 +486,21 @@ const FilePanel = ({ panelId, label, buckets, panelState, setPanelState, onToast
               onClick={e => { e.stopPropagation(); toggleSelect(file.id, e); }}
               onDoubleClick={() => handleDblClick(file)}
               onContextMenu={e => handleContextMenu(e, file)}
-              style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', padding: '7px 12px', cursor: 'default', borderBottom: '1px solid #f9fafb', background: isSelected ? '#EFF6FF' : 'transparent', userSelect: 'none', transition: 'background 0.08s' }}
-              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f9fafb'; }}
+              style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', padding: '7px 12px', cursor: 'default', borderBottom: '1px solid var(--hover)', background: isSelected ? 'var(--selected)' : 'transparent', userSelect: 'none', transition: 'background 0.08s' }}
+              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--hover)'; }}
               onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontFamily: 'IBM Plex Mono', color: '#1f2937', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <Icon name={getFileIcon(file.type)} size={15} color={file.isFolder ? '#F59E0B' : '#6b7280'} />
+              <span style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontFamily: 'IBM Plex Mono', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <Icon name={getFileIcon(file.type)} size={15} color={file.isFolder ? '#F59E0B' : 'var(--text-3)'} />
                 {file.name}
               </span>
-              <span style={{ fontSize: 12, color: '#9ca3af', textAlign: 'right', fontFamily: 'IBM Plex Mono' }}>{file.size}</span>
-              <span style={{ fontSize: 12, color: '#9ca3af', textAlign: 'right', fontFamily: 'IBM Plex Mono' }}>{file.modified}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-4)', textAlign: 'right', fontFamily: 'IBM Plex Mono' }}>{file.size}</span>
+              <span style={{ fontSize: 12, color: 'var(--text-4)', textAlign: 'right', fontFamily: 'IBM Plex Mono' }}>{file.modified}</span>
             </div>
           );
         })}
 
         {!loading && files.length === 0 && (
-          <div style={{ padding: 32, textAlign: 'center', color: '#9ca3af', fontSize: 13 }}>No files in this location</div>
+          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-4)', fontSize: 13 }}>No files in this location</div>
         )}
       </div>
 
@@ -492,18 +528,18 @@ const Sidebar = ({ active, onSelect, onLogout }) => (
     {NAV_ITEMS.map(item => (
       <div key={item.id} onClick={() => onSelect(item.id)}
         title={item.label}
-        style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: active === item.id ? 'rgba(245,158,11,0.15)' : 'transparent', color: active === item.id ? '#F59E0B' : '#6b7280', transition: 'all 0.15s', position: 'relative' }}
+        style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', background: active === item.id ? 'rgba(245,158,11,0.15)' : 'transparent', color: active === item.id ? '#F59E0B' : 'var(--text-3)', transition: 'all 0.15s', position: 'relative' }}
         onMouseEnter={e => { if (active !== item.id) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#d1d5db'; }}
-        onMouseLeave={e => { if (active !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280'; } }}>
+        onMouseLeave={e => { if (active !== item.id) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-3)'; } }}>
         <Icon name={item.icon} size={17} color="currentColor" />
       </div>
     ))}
 
     <div style={{ flex: 1 }} />
     <div title="Logout" onClick={onLogout}
-      style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#6b7280' }}
+      style={{ width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-3)' }}
       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#d1d5db'; }}
-      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280'; }}>
+      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-3)'; }}>
       <Icon name="logout" size={17} color="currentColor" />
     </div>
   </div>
@@ -528,13 +564,13 @@ const Divider = ({ orientation, onResize }) => {
     ? { width: 5, height: '100%', cursor: 'col-resize' }
     : { height: 5, width: '100%', cursor: 'row-resize' };
   const handleStyle = isHoriz
-    ? { width: 2, height: 32, borderRadius: 2, background: '#d1d5db' }
-    : { width: 32, height: 2, borderRadius: 2, background: '#d1d5db' };
+    ? { width: 2, height: 32, borderRadius: 2, background: 'var(--divider)' }
+    : { width: 32, height: 2, borderRadius: 2, background: 'var(--divider)' };
   return (
     <div onMouseDown={onMouseDown}
-      style={{ background: '#f0f2f5', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s', ...barStyle }}
-      onMouseEnter={e => e.currentTarget.style.background = '#e5e7eb'}
-      onMouseLeave={e => e.currentTarget.style.background = '#f0f2f5'}>
+      style={{ background: 'var(--bg)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s', ...barStyle }}
+      onMouseEnter={e => e.currentTarget.style.background = 'var(--border)'}
+      onMouseLeave={e => e.currentTarget.style.background = 'var(--bg)'}>
       <div style={handleStyle} />
     </div>
   );
@@ -544,23 +580,23 @@ const Divider = ({ orientation, onResize }) => {
 const ActionBar = ({ orientation, onCopyDown, onMoveDown, onSwap }) => {
   const arrow = orientation === 'horizontal' ? '→' : '↓';
   return (
-    <div style={{ height: 34, background: '#f8f9fa', borderTop: '1px solid #f0f2f5', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', gap: 4, padding: '0 12px', flexShrink: 0 }}>
-      <span style={{ fontSize: 11, color: '#9ca3af', marginRight: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</span>
+    <div style={{ height: 34, background: 'var(--action-bg)', borderTop: '1px solid var(--bg)', borderBottom: '1px solid var(--bg)', display: 'flex', alignItems: 'center', gap: 4, padding: '0 12px', flexShrink: 0 }}>
+      <span style={{ fontSize: 11, color: 'var(--text-4)', marginRight: 6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Actions</span>
       {[
         { label: `Copy ${arrow}`, icon: 'copy', action: onCopyDown },
         { label: `Move ${arrow}`, icon: 'move', action: onMoveDown },
         { label: 'Swap', icon: 'refresh', action: onSwap },
       ].map(btn => (
         <button key={btn.label} onClick={btn.action}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid #e5e7eb', borderRadius: 5, background: '#fff', fontSize: 12, cursor: 'pointer', color: '#374151', fontFamily: 'IBM Plex Sans', transition: 'all 0.1s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; e.currentTarget.style.borderColor = '#d1d5db'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#e5e7eb'; }}>
-          <Icon name={btn.icon} size={13} color="#6b7280" />
+          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid var(--border)', borderRadius: 5, background: 'var(--panel)', fontSize: 12, cursor: 'pointer', color: 'var(--text-2)', fontFamily: 'IBM Plex Sans', transition: 'all 0.1s' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--chip)'; e.currentTarget.style.borderColor = 'var(--divider)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'var(--panel)'; e.currentTarget.style.borderColor = 'var(--border)'; }}>
+          <Icon name={btn.icon} size={13} />
           {btn.label}
         </button>
       ))}
       <div style={{ flex: 1 }} />
-      <span style={{ fontSize: 11, color: '#b0b7c3', fontFamily: 'IBM Plex Mono' }}>s3://  drag & drop  s3://</span>
+      <span style={{ fontSize: 11, color: 'var(--text-5)', fontFamily: 'IBM Plex Mono' }}>s3://  drag & drop  s3://</span>
     </div>
   );
 };
@@ -573,6 +609,17 @@ const App = () => {
   const [layout, setLayout] = useState(() => {
     try { return localStorage.getItem('pail.layout') || 'vertical'; } catch { return 'vertical'; }
   });
+  const [theme, setTheme] = useState(() => {
+    try {
+      const saved = localStorage.getItem('pail.theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch {}
+    return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  });
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem('pail.theme', theme); } catch {}
+  }, [theme]);
   const [dragState, setDragState] = useState(null);
   const [buckets, setBuckets] = useState([]);
   const [topPanel, setTopPanel] = useState({ bucket: '', prefix: '', files: [], loading: false });
@@ -651,24 +698,36 @@ const App = () => {
       <Sidebar active={activeNav} onSelect={setActiveNav} onLogout={handleLogout} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ height: 42, background: '#fff', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0 }}>
-          <span style={{ fontWeight: 600, fontSize: 14, color: '#1f2937' }}>Pail</span>
-          <span style={{ fontSize: 12, color: '#9ca3af' }}>boto3 / s3</span>
+        <div style={{ height: 42, background: 'var(--panel)', borderBottom: '1px solid var(--bg)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, flexShrink: 0 }}>
+          <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text)' }}>Pail</span>
+          <span style={{ fontSize: 12, color: 'var(--text-4)' }}>boto3 / s3</span>
           <div style={{ flex: 1 }} />
+          <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--panel)', fontSize: 12, cursor: 'pointer', color: 'var(--text-2)', fontFamily: 'IBM Plex Sans' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--chip)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--panel)'; }}>
+            {theme === 'dark' ? (
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3.2" stroke="currentColor" strokeWidth="1.3"/><path d="M8 1.5v1.5M8 13v1.5M1.5 8h1.5M13 8h1.5M3.4 3.4l1 1M11.6 11.6l1 1M12.6 3.4l-1 1M4.4 11.6l-1 1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+            ) : (
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M13.5 9.5A5.5 5.5 0 016.5 2.5a6 6 0 107 7z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>
+            )}
+            {theme === 'dark' ? 'Light' : 'Dark'}
+          </button>
           <button onClick={toggleLayout}
             title={layout === 'vertical' ? 'Switch to side-by-side layout' : 'Switch to top/bottom layout'}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid #e5e7eb', borderRadius: 6, background: '#fff', fontSize: 12, cursor: 'pointer', color: '#374151', fontFamily: 'IBM Plex Sans' }}
-            onMouseEnter={e => { e.currentTarget.style.background = '#f3f4f6'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = '#fff'; }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--panel)', fontSize: 12, cursor: 'pointer', color: 'var(--text-2)', fontFamily: 'IBM Plex Sans' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--chip)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--panel)'; }}>
             {layout === 'vertical' ? (
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="12" rx="1" stroke="#6b7280" strokeWidth="1.2"/><rect x="9" y="2" width="5" height="12" rx="1" stroke="#6b7280" strokeWidth="1.2"/></svg>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="12" rx="1" stroke="currentColor" strokeWidth="1.2"/><rect x="9" y="2" width="5" height="12" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>
             ) : (
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="5" rx="1" stroke="#6b7280" strokeWidth="1.2"/><rect x="2" y="9" width="12" height="5" rx="1" stroke="#6b7280" strokeWidth="1.2"/></svg>
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="5" rx="1" stroke="currentColor" strokeWidth="1.2"/><rect x="2" y="9" width="12" height="5" rx="1" stroke="currentColor" strokeWidth="1.2"/></svg>
             )}
             {layout === 'vertical' ? 'Side-by-side' : 'Top / bottom'}
           </button>
-          <span style={{ fontSize: 11.5, color: '#9ca3af', fontFamily: 'IBM Plex Mono' }}>{buckets.length} bucket{buckets.length === 1 ? '' : 's'}</span>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: buckets.length ? '#34D399' : '#9ca3af' }} title={buckets.length ? 'Connected' : 'Not connected'} />
+          <span style={{ fontSize: 11.5, color: 'var(--text-4)', fontFamily: 'IBM Plex Mono' }}>{buckets.length} bucket{buckets.length === 1 ? '' : 's'}</span>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: buckets.length ? '#34D399' : 'var(--text-4)' }} title={buckets.length ? 'Connected' : 'Not connected'} />
         </div>
 
         <ActionBar
