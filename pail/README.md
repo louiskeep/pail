@@ -34,14 +34,39 @@ SSO session.
 aws configure sso
 ```
 
-Follow the prompts (start URL, region, account, role, profile name). Then any
-time your token expires:
+You'll be walked through ~6 prompts. Two of them trip people up — read these
+carefully:
+
+| Prompt | What to enter |
+|---|---|
+| `SSO session name` | Anything memorable, e.g. `pail` or your company name. |
+| `SSO start URL` | The **AWS access portal URL** from your org. Usually looks like `https://<something>.awsapps.com/start` or `https://<something>.awsapps.com/start/#/`. Find it in AWS Console → IAM Identity Center → Settings → "AWS access portal URL", or ask IT. **Don't** paste an `identitycenter.amazonaws.com/ssoins-...` URL — that's an instance ARN, not a start URL. |
+| `SSO region` | The region your Identity Center lives in, e.g. `us-east-1`. |
+| `SSO registration scopes [sso:account:access]` | **Just press Enter.** This is asking for OAuth scopes, *not* your IAM role name. The default is correct. |
+
+A browser window opens — sign in and approve the request. Back in the
+terminal, AWS continues with:
+
+| Prompt | What to enter |
+|---|---|
+| Account selection | If you have access to multiple accounts, pick one with arrow keys. |
+| Role selection | **This is where your IAM role goes** (e.g. `EDM_DataAnalyst`, `AdministratorAccess`). If you only have one, AWS picks it automatically. |
+| `CLI default client Region` | The region your S3 buckets are in, e.g. `us-east-1`. |
+| `CLI default output format` | `json` is fine. |
+| `CLI profile name` | What you'll type after `--profile`. AWS suggests `<role>-<account>`; shorten it to something like `pail` if you want. |
+
+Then any time your token expires:
 
 ```powershell
 aws sso login --profile <your-profile-name>
 ```
 
 Pick your profile in Pail's login screen → **Profile** tab → **Login**.
+
+**If `aws configure sso` errored with "Failed to retrieve an authorization
+code"** — that usually means either the start URL was wrong, or you typed
+something other than the default into the scopes prompt. Re-run the command
+and follow the table above.
 
 ### Option B — Static keys (simplest)
 
